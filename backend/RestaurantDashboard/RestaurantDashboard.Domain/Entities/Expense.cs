@@ -42,7 +42,7 @@ public sealed class Expense : AggregateRoot
     }
 
     public void Approve() => IsApproved = true;
-    public void Revoke()  => IsApproved = false;
+    public void Revoke() => IsApproved = false;
 
     public void AttachReceipt(string url)
     {

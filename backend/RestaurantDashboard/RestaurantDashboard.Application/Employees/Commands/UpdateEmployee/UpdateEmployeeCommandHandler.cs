@@ -9,12 +9,12 @@ namespace RestaurantDashboard.Application.Employees.Commands.UpdateEmployee;
 public sealed class UpdateEmployeeCommandHandler : IRequestHandler<UpdateEmployeeCommand, EmployeeDto>
 {
     private readonly IEmployeeRepository _employees;
-    private readonly IUnitOfWork         _uow;
+    private readonly IUnitOfWork _uow;
 
     public UpdateEmployeeCommandHandler(IEmployeeRepository employees, IUnitOfWork uow)
     {
         _employees = employees;
-        _uow       = uow;
+        _uow = uow;
     }
 
     public async Task<EmployeeDto> Handle(UpdateEmployeeCommand request, CancellationToken cancellationToken)
@@ -34,13 +34,13 @@ public sealed class UpdateEmployeeCommandHandler : IRequestHandler<UpdateEmploye
 
         return new EmployeeDto
         {
-            Id        = employee.Id,
+            Id = employee.Id,
             FirstName = employee.FirstName,
-            LastName  = employee.LastName,
-            FullName  = employee.FullName,
-            Role      = employee.Role.ToString(),
-            HireDate  = employee.HireDate,
-            IsActive  = employee.IsActive
+            LastName = employee.LastName,
+            FullName = employee.FullName,
+            Role = employee.Role.ToString(),
+            HireDate = employee.HireDate,
+            IsActive = employee.IsActive
         };
     }
 }

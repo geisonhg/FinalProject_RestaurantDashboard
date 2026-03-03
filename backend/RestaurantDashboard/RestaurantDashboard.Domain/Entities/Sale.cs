@@ -29,10 +29,10 @@ public sealed class Sale : AggregateRoot
     {
         Guard.AgainstNegative(tipAmount, nameof(tipAmount));
 
-        var tax   = Money.From(subtotal.Amount * taxRate);
-        var tip   = Money.From(tipAmount);
+        var tax = Money.From(subtotal.Amount * taxRate);
+        var tip = Money.From(tipAmount);
         var total = subtotal + tax + tip;
-        var date  = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTime.UtcNow);
 
         var sale = new Sale
         {

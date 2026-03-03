@@ -11,7 +11,7 @@ namespace RestaurantDashboard.Application.Tests.Sales.Commands;
 public sealed class VoidOrderCommandHandlerTests
 {
     private readonly Mock<IOrderRepository> _ordersMock = new();
-    private readonly Mock<IUnitOfWork>      _uowMock    = new();
+    private readonly Mock<IUnitOfWork> _uowMock = new();
 
     private VoidOrderCommandHandler CreateSut() =>
         new(_ordersMock.Object, _uowMock.Object);

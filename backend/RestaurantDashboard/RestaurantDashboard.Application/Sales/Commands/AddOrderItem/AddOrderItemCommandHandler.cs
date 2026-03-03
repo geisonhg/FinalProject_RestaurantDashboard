@@ -16,9 +16,9 @@ public sealed class AddOrderItemCommandHandler : IRequestHandler<AddOrderItemCom
         IMenuItemRepository menuItems,
         IUnitOfWork uow)
     {
-        _orders    = orders;
+        _orders = orders;
         _menuItems = menuItems;
-        _uow       = uow;
+        _uow = uow;
     }
 
     public async Task<Unit> Handle(AddOrderItemCommand request, CancellationToken cancellationToken)

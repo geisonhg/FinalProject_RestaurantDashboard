@@ -20,13 +20,13 @@ public sealed class GetAllEmployeesQueryHandler
 
         return employees.Select(e => new EmployeeDto
         {
-            Id        = e.Id,
+            Id = e.Id,
             FirstName = e.FirstName,
-            LastName  = e.LastName,
-            FullName  = e.FullName,
-            Role      = e.Role.ToString(),
-            HireDate  = e.HireDate,
-            IsActive  = e.IsActive
+            LastName = e.LastName,
+            FullName = e.FullName,
+            Role = e.Role.ToString(),
+            HireDate = e.HireDate,
+            IsActive = e.IsActive
         }).ToList();
     }
 }

@@ -8,12 +8,12 @@ namespace RestaurantDashboard.Application.Employees.Commands.ClockOut;
 public sealed class ClockOutCommandHandler : IRequestHandler<ClockOutCommand, Unit>
 {
     private readonly IEmployeeRepository _employees;
-    private readonly IUnitOfWork         _uow;
+    private readonly IUnitOfWork _uow;
 
     public ClockOutCommandHandler(IEmployeeRepository employees, IUnitOfWork uow)
     {
         _employees = employees;
-        _uow       = uow;
+        _uow = uow;
     }
 
     public async Task<Unit> Handle(ClockOutCommand request, CancellationToken cancellationToken)

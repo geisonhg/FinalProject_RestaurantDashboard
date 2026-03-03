@@ -8,14 +8,14 @@ public sealed class GetEmployeePerformanceQueryHandler
     : IRequestHandler<GetEmployeePerformanceQuery, IReadOnlyList<EmployeePerformanceDto>>
 {
     private readonly IEmployeeRepository _employees;
-    private readonly ISaleRepository     _sales;
+    private readonly ISaleRepository _sales;
 
     public GetEmployeePerformanceQueryHandler(
         IEmployeeRepository employees,
         ISaleRepository sales)
     {
         _employees = employees;
-        _sales     = sales;
+        _sales = sales;
     }
 
     public async Task<IReadOnlyList<EmployeePerformanceDto>> Handle(
@@ -23,12 +23,12 @@ public sealed class GetEmployeePerformanceQueryHandler
         CancellationToken cancellationToken)
     {
         var employeesTask = _employees.GetAllActiveAsync(cancellationToken);
-        var salesTask     = _sales.GetByDateRangeAsync(request.From, request.To, cancellationToken);
+        var salesTask = _sales.GetByDateRangeAsync(request.From, request.To, cancellationToken);
 
         await Task.WhenAll(employeesTask, salesTask);
 
         var allEmployees = employeesTask.Result;
-        var allSales     = salesTask.Result;
+        var allSales = salesTask.Result;
 
         var salesByEmployee = allSales
             .GroupBy(s => s.ProcessedByEmployeeId)
@@ -42,14 +42,14 @@ public sealed class GetEmployeePerformanceQueryHandler
 
             return new EmployeePerformanceDto
             {
-                EmployeeId       = e.Id,
-                FullName         = e.FullName,
-                Role             = e.Role.ToString(),
-                TotalShifts      = e.GetTotalShifts(request.From, request.To),
+                EmployeeId = e.Id,
+                FullName = e.FullName,
+                Role = e.Role.ToString(),
+                TotalShifts = e.GetTotalShifts(request.From, request.To),
                 TotalHoursWorked = e.GetTotalHours(request.From, request.To),
                 TotalOrdersServed = saleData.Count,
-                TotalSalesAmount  = saleData.Revenue,
-                TotalTipsEarned   = e.GetTotalTips(request.From, request.To)
+                TotalSalesAmount = saleData.Revenue,
+                TotalTipsEarned = e.GetTotalTips(request.From, request.To)
             };
         }).ToList();
     }

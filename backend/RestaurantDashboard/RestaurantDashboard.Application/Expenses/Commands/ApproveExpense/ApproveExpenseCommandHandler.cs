@@ -8,12 +8,12 @@ namespace RestaurantDashboard.Application.Expenses.Commands.ApproveExpense;
 public sealed class ApproveExpenseCommandHandler : IRequestHandler<ApproveExpenseCommand, Unit>
 {
     private readonly IExpenseRepository _expenses;
-    private readonly IUnitOfWork        _uow;
+    private readonly IUnitOfWork _uow;
 
     public ApproveExpenseCommandHandler(IExpenseRepository expenses, IUnitOfWork uow)
     {
         _expenses = expenses;
-        _uow      = uow;
+        _uow = uow;
     }
 
     public async Task<Unit> Handle(ApproveExpenseCommand request, CancellationToken cancellationToken)

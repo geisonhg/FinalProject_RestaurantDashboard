@@ -33,9 +33,9 @@ public sealed class OrderTests
     [Fact]
     public void AddItem_ToOpenOrder_AddsItemToCollection()
     {
-        var order    = Order.Open(1, EmployeeId);
-        var menuId   = Guid.NewGuid();
-        var price    = Money.From(9.99m);
+        var order = Order.Open(1, EmployeeId);
+        var menuId = Guid.NewGuid();
+        var price = Money.From(9.99m);
 
         order.AddItem(menuId, "Burger", 2, price);
 
@@ -46,9 +46,9 @@ public sealed class OrderTests
     [Fact]
     public void AddItem_SameMenuItemTwice_MergesQuantity()
     {
-        var order  = Order.Open(1, EmployeeId);
+        var order = Order.Open(1, EmployeeId);
         var menuId = Guid.NewGuid();
-        var price  = Money.From(10m);
+        var price = Money.From(10m);
 
         order.AddItem(menuId, "Pizza", 1, price);
         order.AddItem(menuId, "Pizza", 2, price);
@@ -60,7 +60,7 @@ public sealed class OrderTests
     [Fact]
     public void RemoveItem_ExistingItem_RemovesItFromCollection()
     {
-        var order  = Order.Open(1, EmployeeId);
+        var order = Order.Open(1, EmployeeId);
         var menuId = Guid.NewGuid();
         order.AddItem(menuId, "Salad", 1, Money.From(5m));
         var itemId = order.Items.First().Id;

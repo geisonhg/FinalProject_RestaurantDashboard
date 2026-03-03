@@ -13,7 +13,7 @@ public sealed class VoidOrderCommandHandler : IRequestHandler<VoidOrderCommand, 
     public VoidOrderCommandHandler(IOrderRepository orders, IUnitOfWork uow)
     {
         _orders = orders;
-        _uow    = uow;
+        _uow = uow;
     }
 
     public async Task<Unit> Handle(VoidOrderCommand request, CancellationToken cancellationToken)

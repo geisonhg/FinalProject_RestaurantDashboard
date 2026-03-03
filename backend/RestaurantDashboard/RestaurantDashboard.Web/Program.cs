@@ -57,10 +57,10 @@ builder.Services.AddScoped<DashboardStateService>();
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly",          p => p.RequireRole("Admin"));
-    options.AddPolicy("ManagerPlus",        p => p.RequireRole("Admin", "Manager"));
+    options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    options.AddPolicy("ManagerPlus", p => p.RequireRole("Admin", "Manager"));
     options.AddPolicy("CanGenerateReports", p => p.RequireRole("Admin", "Manager"));
-    options.AddPolicy("AllStaff",           p => p.RequireAuthenticatedUser());
+    options.AddPolicy("AllStaff", p => p.RequireAuthenticatedUser());
 });
 
 var app = builder.Build();
@@ -87,7 +87,7 @@ app.MapAdditionalIdentityEndpoints();
 // Seed database on startup
 await using (var scope = app.Services.CreateAsyncScope())
 {
-    var context     = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
     await DataSeeder.SeedAsync(context, userManager, roleManager);

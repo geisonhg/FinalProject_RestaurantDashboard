@@ -9,7 +9,7 @@ namespace RestaurantDashboard.Application.Tests.MenuItems.Commands;
 public sealed class CreateMenuItemCommandHandlerTests
 {
     private readonly Mock<IMenuItemRepository> _menuItemsMock = new();
-    private readonly Mock<IUnitOfWork>         _uowMock       = new();
+    private readonly Mock<IUnitOfWork> _uowMock = new();
 
     private CreateMenuItemCommandHandler CreateSut() =>
         new(_menuItemsMock.Object, _uowMock.Object);

@@ -10,9 +10,9 @@ namespace RestaurantDashboard.Application.Tests.Sales.Commands;
 
 public sealed class CreateOrderCommandHandlerTests
 {
-    private readonly Mock<IOrderRepository>    _ordersMock    = new();
+    private readonly Mock<IOrderRepository> _ordersMock = new();
     private readonly Mock<IEmployeeRepository> _employeesMock = new();
-    private readonly Mock<IUnitOfWork>         _uowMock       = new();
+    private readonly Mock<IUnitOfWork> _uowMock = new();
 
     private CreateOrderCommandHandler CreateSut() =>
         new(_ordersMock.Object, _employeesMock.Object, _uowMock.Object);
@@ -24,7 +24,7 @@ public sealed class CreateOrderCommandHandlerTests
         _employeesMock.Setup(r => r.GetByIdAsync(employee.Id, default)).ReturnsAsync(employee);
 
         var command = new CreateOrderCommand { TableNumber = 3, EmployeeId = employee.Id };
-        var result  = await CreateSut().Handle(command, default);
+        var result = await CreateSut().Handle(command, default);
 
         result.TableNumber.Should().Be(3);
         result.EmployeeName.Should().Be("Tom Jones");

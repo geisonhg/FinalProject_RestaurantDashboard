@@ -11,9 +11,9 @@ namespace RestaurantDashboard.Application.Tests.Sales.Commands;
 
 public sealed class AddOrderItemCommandHandlerTests
 {
-    private readonly Mock<IOrderRepository>    _ordersMock     = new();
-    private readonly Mock<IMenuItemRepository> _menuItemsMock  = new();
-    private readonly Mock<IUnitOfWork>         _uowMock        = new();
+    private readonly Mock<IOrderRepository> _ordersMock = new();
+    private readonly Mock<IMenuItemRepository> _menuItemsMock = new();
+    private readonly Mock<IUnitOfWork> _uowMock = new();
 
     private AddOrderItemCommandHandler CreateSut() =>
         new(_ordersMock.Object, _menuItemsMock.Object, _uowMock.Object);
@@ -35,7 +35,7 @@ public sealed class AddOrderItemCommandHandlerTests
     [Fact]
     public async Task Handle_ValidRequest_AddsItemToOrderAndCommits()
     {
-        var order    = CreateOpenOrder();
+        var order = CreateOpenOrder();
         var menuItem = CreateMenuItem();
 
         _ordersMock.Setup(r => r.GetByIdWithItemsAsync(order.Id, default)).ReturnsAsync(order);
@@ -62,7 +62,7 @@ public sealed class AddOrderItemCommandHandlerTests
     [Fact]
     public async Task Handle_UnavailableMenuItem_ThrowsDomainException()
     {
-        var order    = CreateOpenOrder();
+        var order = CreateOpenOrder();
         var menuItem = CreateMenuItem(isAvailable: false);
 
         _ordersMock.Setup(r => r.GetByIdWithItemsAsync(order.Id, default)).ReturnsAsync(order);

@@ -52,7 +52,7 @@ public sealed class Employee : AggregateRoot
     }
 
     public void Deactivate() => IsActive = false;
-    public void Activate()   => IsActive = true;
+    public void Activate() => IsActive = true;
 
     public Shift ClockIn()
     {

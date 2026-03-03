@@ -20,15 +20,15 @@ public sealed class GetExpensesQueryHandler
 
         return expenses.Select(e => new ExpenseDto
         {
-            Id                   = e.Id,
-            Category             = e.Category.ToString(),
-            Amount               = e.Amount.Amount,
-            Date                 = e.Date,
-            Description          = e.Description,
-            ReceiptUrl           = e.ReceiptUrl,
+            Id = e.Id,
+            Category = e.Category.ToString(),
+            Amount = e.Amount.Amount,
+            Date = e.Date,
+            Description = e.Description,
+            ReceiptUrl = e.ReceiptUrl,
             RecordedByEmployeeId = e.RecordedByEmployeeId,
-            IsApproved           = e.IsApproved,
-            CreatedAt            = e.CreatedAt
+            IsApproved = e.IsApproved,
+            CreatedAt = e.CreatedAt
         }).ToList();
     }
 }

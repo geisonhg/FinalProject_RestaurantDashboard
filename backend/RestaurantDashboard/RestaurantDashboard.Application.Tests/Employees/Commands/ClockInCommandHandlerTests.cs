@@ -11,7 +11,7 @@ namespace RestaurantDashboard.Application.Tests.Employees.Commands;
 public sealed class ClockInCommandHandlerTests
 {
     private readonly Mock<IEmployeeRepository> _employeesMock = new();
-    private readonly Mock<IUnitOfWork>         _uowMock       = new();
+    private readonly Mock<IUnitOfWork> _uowMock = new();
 
     private ClockInCommandHandler CreateSut() =>
         new(_employeesMock.Object, _uowMock.Object);

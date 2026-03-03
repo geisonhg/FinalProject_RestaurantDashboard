@@ -59,7 +59,7 @@ public sealed class EmployeeTests
     public void ClockOut_ActiveShift_CompletesShift()
     {
         var employee = CreateEmployee();
-        var shift    = employee.ClockIn();
+        var shift = employee.ClockIn();
 
         employee.ClockOut(shift.Id, 20m);
 

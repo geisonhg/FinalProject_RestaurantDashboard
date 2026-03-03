@@ -21,7 +21,7 @@ public sealed class GetSalesSummaryQueryHandler
         GetSalesSummaryQuery request,
         CancellationToken cancellationToken)
     {
-        var salesTask   = _sales.GetByDateRangeAsync(request.From, request.To, cancellationToken);
+        var salesTask = _sales.GetByDateRangeAsync(request.From, request.To, cancellationToken);
         var expenseTask = _expenses.GetTotalAsync(request.From, request.To, cancellationToken);
 
         await Task.WhenAll(salesTask, expenseTask);
@@ -39,14 +39,14 @@ public sealed class GetSalesSummaryQueryHandler
 
         return new SalesSummaryDto
         {
-            PeriodStart                  = request.From,
-            PeriodEnd                    = request.To,
-            TotalRevenue                 = saleRecords.Sum(s => s.TotalAmount.Amount),
-            TotalTips                    = saleRecords.Sum(s => s.TipAmount.Amount),
-            TotalTransactions            = saleRecords.Count,
-            TotalExpenses                = totalExpenses,
-            RevenueByPaymentMethod       = revenueByPayment,
-            TransactionsByPaymentMethod  = txByPayment
+            PeriodStart = request.From,
+            PeriodEnd = request.To,
+            TotalRevenue = saleRecords.Sum(s => s.TotalAmount.Amount),
+            TotalTips = saleRecords.Sum(s => s.TipAmount.Amount),
+            TotalTransactions = saleRecords.Count,
+            TotalExpenses = totalExpenses,
+            RevenueByPaymentMethod = revenueByPayment,
+            TransactionsByPaymentMethod = txByPayment
         };
     }
 }

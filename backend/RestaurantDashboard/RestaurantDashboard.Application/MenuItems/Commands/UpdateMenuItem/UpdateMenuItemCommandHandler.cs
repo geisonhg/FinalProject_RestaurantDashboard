@@ -9,12 +9,12 @@ namespace RestaurantDashboard.Application.MenuItems.Commands.UpdateMenuItem;
 public sealed class UpdateMenuItemCommandHandler : IRequestHandler<UpdateMenuItemCommand, MenuItemDto>
 {
     private readonly IMenuItemRepository _menuItems;
-    private readonly IUnitOfWork         _uow;
+    private readonly IUnitOfWork _uow;
 
     public UpdateMenuItemCommandHandler(IMenuItemRepository menuItems, IUnitOfWork uow)
     {
         _menuItems = menuItems;
-        _uow       = uow;
+        _uow = uow;
     }
 
     public async Task<MenuItemDto> Handle(UpdateMenuItemCommand request, CancellationToken cancellationToken)
@@ -31,10 +31,10 @@ public sealed class UpdateMenuItemCommandHandler : IRequestHandler<UpdateMenuIte
 
         return new MenuItemDto
         {
-            Id          = menuItem.Id,
-            Name        = menuItem.Name,
-            Category    = menuItem.Category,
-            BasePrice   = menuItem.BasePrice.Amount,
+            Id = menuItem.Id,
+            Name = menuItem.Name,
+            Category = menuItem.Category,
+            BasePrice = menuItem.BasePrice.Amount,
             IsAvailable = menuItem.IsAvailable
         };
     }

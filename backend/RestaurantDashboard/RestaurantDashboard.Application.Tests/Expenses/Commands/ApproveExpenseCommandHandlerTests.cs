@@ -12,7 +12,7 @@ namespace RestaurantDashboard.Application.Tests.Expenses.Commands;
 public sealed class ApproveExpenseCommandHandlerTests
 {
     private readonly Mock<IExpenseRepository> _expensesMock = new();
-    private readonly Mock<IUnitOfWork>        _uowMock      = new();
+    private readonly Mock<IUnitOfWork> _uowMock = new();
 
     private ApproveExpenseCommandHandler CreateSut() =>
         new(_expensesMock.Object, _uowMock.Object);

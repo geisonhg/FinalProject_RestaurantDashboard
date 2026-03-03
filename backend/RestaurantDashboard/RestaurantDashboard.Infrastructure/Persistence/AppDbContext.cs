@@ -12,15 +12,15 @@ public sealed class AppDbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    public DbSet<Employee>  Employees  { get; set; } = default!;
-    public DbSet<Order>     Orders     { get; set; } = default!;
+    public DbSet<Employee> Employees { get; set; } = default!;
+    public DbSet<Order> Orders { get; set; } = default!;
     public DbSet<OrderItem> OrderItems { get; set; } = default!;
-    public DbSet<MenuItem>  MenuItems  { get; set; } = default!;
-    public DbSet<Sale>      Sales      { get; set; } = default!;
-    public DbSet<Tip>       Tips       { get; set; } = default!;
-    public DbSet<Shift>     Shifts     { get; set; } = default!;
-    public DbSet<Expense>   Expenses   { get; set; } = default!;
-    public DbSet<Report>    Reports    { get; set; } = default!;
+    public DbSet<MenuItem> MenuItems { get; set; } = default!;
+    public DbSet<Sale> Sales { get; set; } = default!;
+    public DbSet<Tip> Tips { get; set; } = default!;
+    public DbSet<Shift> Shifts { get; set; } = default!;
+    public DbSet<Expense> Expenses { get; set; } = default!;
+    public DbSet<Report> Reports { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

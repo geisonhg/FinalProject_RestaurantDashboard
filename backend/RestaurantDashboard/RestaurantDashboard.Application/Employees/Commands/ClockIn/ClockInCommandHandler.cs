@@ -8,12 +8,12 @@ namespace RestaurantDashboard.Application.Employees.Commands.ClockIn;
 public sealed class ClockInCommandHandler : IRequestHandler<ClockInCommand, Guid>
 {
     private readonly IEmployeeRepository _employees;
-    private readonly IUnitOfWork         _uow;
+    private readonly IUnitOfWork _uow;
 
     public ClockInCommandHandler(IEmployeeRepository employees, IUnitOfWork uow)
     {
         _employees = employees;
-        _uow       = uow;
+        _uow = uow;
     }
 
     public async Task<Guid> Handle(ClockInCommand request, CancellationToken cancellationToken)

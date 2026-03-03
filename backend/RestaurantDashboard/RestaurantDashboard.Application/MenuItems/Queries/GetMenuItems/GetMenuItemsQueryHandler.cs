@@ -20,10 +20,10 @@ public sealed class GetMenuItemsQueryHandler
 
         return items.Select(m => new MenuItemDto
         {
-            Id          = m.Id,
-            Name        = m.Name,
-            Category    = m.Category,
-            BasePrice   = m.BasePrice.Amount,
+            Id = m.Id,
+            Name = m.Name,
+            Category = m.Category,
+            BasePrice = m.BasePrice.Amount,
             IsAvailable = m.IsAvailable
         }).ToList();
     }
