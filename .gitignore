@@ -1,0 +1,68 @@
+# .NET build outputs
+bin/
+obj/
+out/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# User-specific settings
+*.userprefs
+
+# Publish output
+publish/
+PublishScripts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids
+*.pid
+
+# Environment-specific config (NEVER commit secrets)
+appsettings.Production.json
+.env
+*.env
+
+# dotnet tool manifests (local tools only)
+.config/dotnet-tools.json
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Temporary files
+tmp/
+temp/
