@@ -20,11 +20,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      # ── 1. Format check (fail fast) ───────────────────────────────────────
-      - name: Format check
-        run: dotnet format RestaurantDashboard.sln --verify-no-changes
-
-      # ── 2. Restore (cached) ───────────────────────────────────────────────
+      # ── 1. Restore (cached) — must run before format check ────────────────
       - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
@@ -35,6 +31,10 @@ jobs:
 
       - name: Restore
         run: dotnet restore RestaurantDashboard.sln
+
+      # ── 2. Format check ───────────────────────────────────────────────────
+      - name: Format check
+        run: dotnet format RestaurantDashboard.sln --verify-no-changes --no-restore
 
       # ── 3. Build ──────────────────────────────────────────────────────────
       - name: Build
