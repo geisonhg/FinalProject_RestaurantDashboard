@@ -25,17 +25,24 @@ public sealed class WeeklyReportJob : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Short delay so the app finishes starting up before we touch the DB
-        await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            await TryGenerateAsync(stoppingToken);
+            // Short delay so the app finishes starting up before we touch the DB
+            await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
 
-            // Wait until next Monday 03:00 UTC
-            var delay = TimeUntilNextMonday();
-            _logger.LogInformation("WeeklyReportJob: next run in {Hours:F1} hours.", delay.TotalHours);
-            await Task.Delay(delay, stoppingToken);
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await TryGenerateAsync(stoppingToken);
+
+                // Wait until next Monday 03:00 UTC
+                var delay = TimeUntilNextMonday();
+                _logger.LogInformation("WeeklyReportJob: next run in {Hours:F1} hours.", delay.TotalHours);
+                await Task.Delay(delay, stoppingToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("WeeklyReportJob: stopped gracefully.");
         }
     }
 
