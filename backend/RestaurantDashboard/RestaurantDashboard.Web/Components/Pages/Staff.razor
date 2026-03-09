@@ -313,7 +313,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(LoadEmployees(), LoadPerformance());
+        await LoadEmployees();
+        await LoadPerformance();
     }
 
     private async Task LoadEmployees()

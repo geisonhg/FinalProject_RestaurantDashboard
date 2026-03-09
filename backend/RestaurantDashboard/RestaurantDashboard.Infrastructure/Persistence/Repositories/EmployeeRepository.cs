@@ -23,6 +23,7 @@ public sealed class EmployeeRepository : IEmployeeRepository
 
     public async Task<IReadOnlyList<Employee>> GetAllActiveAsync(CancellationToken ct) =>
         await _context.Employees
+            .AsNoTracking()
             .Where(e => e.IsActive)
             .OrderBy(e => e.LastName)
             .ThenBy(e => e.FirstName)
@@ -31,6 +32,7 @@ public sealed class EmployeeRepository : IEmployeeRepository
     public async Task<IReadOnlyList<Employee>> GetAllActiveWithShiftsAsync(CancellationToken ct) =>
         await _context.Employees
             .Include(e => e.Shifts)
+            .AsNoTracking()
             .Where(e => e.IsActive)
             .OrderBy(e => e.LastName)
             .ThenBy(e => e.FirstName)
