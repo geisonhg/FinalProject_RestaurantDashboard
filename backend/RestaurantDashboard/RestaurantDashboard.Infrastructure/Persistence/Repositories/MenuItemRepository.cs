@@ -15,6 +15,7 @@ public sealed class MenuItemRepository : IMenuItemRepository
 
     public async Task<IReadOnlyList<MenuItem>> GetAllAvailableAsync(CancellationToken ct) =>
         await _context.MenuItems
+            .AsNoTracking()
             .Where(m => m.IsAvailable)
             .OrderBy(m => m.Category)
             .ThenBy(m => m.Name)
@@ -22,6 +23,7 @@ public sealed class MenuItemRepository : IMenuItemRepository
 
     public async Task<IReadOnlyList<MenuItem>> GetByCategoryAsync(string category, CancellationToken ct) =>
         await _context.MenuItems
+            .AsNoTracking()
             .Where(m => m.Category == category && m.IsAvailable)
             .ToListAsync(ct);
 

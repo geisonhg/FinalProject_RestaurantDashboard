@@ -16,12 +16,14 @@ public sealed class ExpenseRepository : IExpenseRepository
 
     public async Task<IReadOnlyList<Expense>> GetByDateRangeAsync(DateOnly from, DateOnly to, CancellationToken ct) =>
         await _context.Expenses
+            .AsNoTracking()
             .Where(e => e.Date >= from && e.Date <= to)
             .OrderByDescending(e => e.Date)
             .ToListAsync(ct);
 
     public async Task<IReadOnlyList<Expense>> GetByCategoryAsync(ExpenseCategory category, CancellationToken ct) =>
         await _context.Expenses
+            .AsNoTracking()
             .Where(e => e.Category == category)
             .OrderByDescending(e => e.Date)
             .ToListAsync(ct);

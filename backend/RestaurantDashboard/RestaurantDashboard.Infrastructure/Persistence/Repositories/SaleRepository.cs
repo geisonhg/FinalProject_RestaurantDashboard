@@ -19,6 +19,7 @@ public sealed class SaleRepository : ISaleRepository
     public async Task<IReadOnlyList<Sale>> GetByDateRangeAsync(DateOnly from, DateOnly to, CancellationToken ct) =>
         await _context.Sales
             .Include(s => s.Tip)
+            .AsNoTracking()
             .Where(s => s.Date >= from && s.Date <= to)
             .OrderByDescending(s => s.Date)
             .ToListAsync(ct);
