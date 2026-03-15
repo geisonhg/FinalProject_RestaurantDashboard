@@ -18,21 +18,21 @@
 @inject IMediator Mediator
 @inject OrderNotifier OrderNotifier
 
-<PageTitle>Órdenes</PageTitle>
+<PageTitle>Orders</PageTitle>
 
 <div class="ord-page">
     <div class="ord-header">
         <div>
-            <h1 class="ord-title">Órdenes Abiertas</h1>
-            <p class="ord-subtitle">Gestión de mesas en tiempo real</p>
+            <h1 class="ord-title">Open Orders</h1>
+            <p class="ord-subtitle">Real-time table management</p>
         </div>
         <div class="ord-realtime">
             <span class="ord-realtime__dot"></span>
-            <span class="ord-realtime__label">En vivo</span>
+            <span class="ord-realtime__label">Live</span>
         </div>
         <div class="ord-header-actions">
-            <button class="ord-btn ord-btn--refresh" @onclick="LoadOrders">↻ Actualizar</button>
-            <button class="ord-btn ord-btn--new" @onclick="OpenCreateModal">+ Nueva Orden</button>
+            <button class="ord-btn ord-btn--refresh" @onclick="LoadOrders">↻ Refresh</button>
+            <button class="ord-btn ord-btn--new" @onclick="OpenCreateModal">+ New Order</button>
         </div>
     </div>
 
@@ -40,7 +40,7 @@
     {
         <div class="ord-loading">
             <div class="ord-spinner"></div>
-            <span>Cargando órdenes...</span>
+            <span>Loading orders...</span>
         </div>
     }
     else if (orders is not null && orders.Any())
@@ -51,7 +51,7 @@
                 <div class="ord-card @(selectedOrderId == order.Id ? "ord-card--selected" : "")"
                      @onclick="() => SelectOrder(order)">
                     <div class="ord-card__head">
-                        <span class="ord-card__table">Mesa @order.TableNumber</span>
+                        <span class="ord-card__table">Table @order.TableNumber</span>
                         <span class="ord-card__status ord-card__status--@order.Status.ToLower()">@order.Status</span>
                     </div>
                     <div class="ord-card__employee">👤 @order.EmployeeName</div>
@@ -69,16 +69,16 @@
         {
             <div class="ord-detail">
                 <div class="ord-detail__head">
-                    <h2>Mesa @selectedOrder.TableNumber — Detalle</h2>
+                    <h2>Table @selectedOrder.TableNumber — Detail</h2>
                     <div class="ord-detail__actions">
                         <button class="ord-btn ord-btn--add-item" @onclick="OpenAddItemModal" disabled="@isActing">
-                            + Agregar Producto
+                            + Add Item
                         </button>
                         <button class="ord-btn ord-btn--close" @onclick="OpenCloseModal" disabled="@isActing">
-                            ✅ Cerrar Orden
+                            ✅ Close Order
                         </button>
                         <button class="ord-btn ord-btn--void" @onclick="VoidOrder" disabled="@isActing">
-                            ❌ Anular
+                            ❌ Void
                         </button>
                     </div>
                 </div>
@@ -86,9 +86,9 @@
                 <table class="ord-table">
                     <thead>
                         <tr>
-                            <th>Producto</th>
-                            <th>Cant.</th>
-                            <th>P. Unit.</th>
+                            <th>Item</th>
+                            <th>Qty.</th>
+                            <th>Unit Price</th>
                             <th>Total</th>
                         </tr>
                     </thead>
@@ -108,7 +108,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="4" class="ord-table__empty">Sin productos — agrega ítems con "+ Agregar Producto"</td>
+                                <td colspan="4" class="ord-table__empty">No items — add items with "+ Add Item"</td>
                             </tr>
                         }
                     </tbody>
@@ -126,8 +126,8 @@
     {
         <div class="ord-empty">
             <span>🎉</span>
-            <p>No hay órdenes abiertas en este momento</p>
-            <button class="ord-btn ord-btn--new" @onclick="OpenCreateModal">+ Nueva Orden</button>
+            <p>No open orders at this time</p>
+            <button class="ord-btn ord-btn--new" @onclick="OpenCreateModal">+ New Order</button>
         </div>
     }
 
@@ -139,21 +139,21 @@
     }
 </div>
 
-@* ── Modal: Nueva Orden ── *@
+@* ── Modal: New Order ── *@
 @if (showCreateModal)
 {
     <div class="ord-modal-backdrop" @onclick="CloseCreateModal">
         <div class="ord-modal" @onclick:stopPropagation>
-            <h2 class="ord-modal__title">Nueva Orden</h2>
+            <h2 class="ord-modal__title">New Order</h2>
 
             <div class="ord-form">
-                <label class="ord-label">Número de mesa</label>
+                <label class="ord-label">Table number</label>
                 <input class="ord-input" type="number" min="1" @bind="formTableNumber" />
 
-                <label class="ord-label">Empleado</label>
+                <label class="ord-label">Employee</label>
                 @if (employees is null)
                 {
-                    <div class="ord-form-loading">Cargando empleados...</div>
+                    <div class="ord-form-loading">Loading employees...</div>
                 }
                 else
                 {
@@ -165,9 +165,9 @@
                     </select>
                 }
 
-                <label class="ord-label">Notas (opcional)</label>
+                <label class="ord-label">Notes (optional)</label>
                 <input class="ord-input" type="text" @bind="formNotes"
-                    placeholder="Ej: alergia a nueces, mesa exterior..." />
+                    placeholder="E.g.: nut allergy, outdoor table..." />
 
                 @if (modalError is not null)
                 {
@@ -175,10 +175,10 @@
                 }
 
                 <div class="ord-form-actions">
-                    <button class="ord-btn ord-btn--cancel" @onclick="CloseCreateModal">Cancelar</button>
+                    <button class="ord-btn ord-btn--cancel" @onclick="CloseCreateModal">Cancel</button>
                     <button class="ord-btn ord-btn--confirm" @onclick="CreateOrder"
                         disabled="@(isModalSaving || employees is null)">
-                        @(isModalSaving ? "Creando..." : "Abrir Orden")
+                        @(isModalSaving ? "Creating..." : "Open Order")
                     </button>
                 </div>
             </div>
@@ -186,19 +186,19 @@
     </div>
 }
 
-@* ── Modal: Agregar Producto ── *@
+@* ── Modal: Add Item ── *@
 @if (showAddItemModal)
 {
     <div class="ord-modal-backdrop" @onclick="CloseAddItemModal">
         <div class="ord-modal" @onclick:stopPropagation>
-            <h2 class="ord-modal__title">Agregar Producto</h2>
-            <p class="ord-modal__sub">Mesa @selectedOrder?.TableNumber</p>
+            <h2 class="ord-modal__title">Add Item</h2>
+            <p class="ord-modal__sub">Table @selectedOrder?.TableNumber</p>
 
             <div class="ord-form">
-                <label class="ord-label">Producto</label>
+                <label class="ord-label">Item</label>
                 @if (menuItems is null)
                 {
-                    <div class="ord-form-loading">Cargando menú...</div>
+                    <div class="ord-form-loading">Loading menu...</div>
                 }
                 else
                 {
@@ -210,7 +210,7 @@
                     </select>
                 }
 
-                <label class="ord-label">Cantidad</label>
+                <label class="ord-label">Quantity</label>
                 <input class="ord-input" type="number" min="1" max="99" @bind="formQuantity" />
 
                 @if (modalError is not null)
@@ -219,10 +219,10 @@
                 }
 
                 <div class="ord-form-actions">
-                    <button class="ord-btn ord-btn--cancel" @onclick="CloseAddItemModal">Cancelar</button>
+                    <button class="ord-btn ord-btn--cancel" @onclick="CloseAddItemModal">Cancel</button>
                     <button class="ord-btn ord-btn--confirm" @onclick="AddItem"
                         disabled="@(isModalSaving || menuItems is null)">
-                        @(isModalSaving ? "Agregando..." : "Agregar")
+                        @(isModalSaving ? "Adding..." : "Add")
                     </button>
                 </div>
             </div>
@@ -230,16 +230,16 @@
     </div>
 }
 
-@* ── Modal: Cerrar Orden (pago) ── *@
+@* ── Modal: Close Order (payment) ── *@
 @if (showCloseModal && selectedOrder is not null)
 {
     <div class="ord-modal-backdrop" @onclick="CloseCloseModal">
         <div class="ord-modal" @onclick:stopPropagation>
-            <h2 class="ord-modal__title">Cobrar Orden</h2>
-            <p class="ord-modal__sub">Mesa @selectedOrder.TableNumber · @selectedOrder.Subtotal.ToString("C")</p>
+            <h2 class="ord-modal__title">Charge Order</h2>
+            <p class="ord-modal__sub">Table @selectedOrder.TableNumber · @selectedOrder.Subtotal.ToString("C")</p>
 
             <div class="ord-form">
-                <label class="ord-label">Método de pago</label>
+                <label class="ord-label">Payment method</label>
                 <div class="ord-payment-grid">
                     @foreach (var method in Enum.GetValues<PaymentMethod>())
                     {
@@ -250,13 +250,13 @@
                     }
                 </div>
 
-                <label class="ord-label">Propina (€)</label>
+                <label class="ord-label">Tip (€)</label>
                 <input class="ord-input" type="number" min="0" step="0.01" @bind="formTipAmount" />
 
                 <div class="ord-close-summary">
                     <span>Subtotal</span><span>@selectedOrder.Subtotal.ToString("C")</span>
-                    <span>Propina</span><span>@formTipAmount.ToString("C")</span>
-                    <span class="ord-close-total">Total a cobrar</span>
+                    <span>Tip</span><span>@formTipAmount.ToString("C")</span>
+                    <span class="ord-close-total">Total to charge</span>
                     <span class="ord-close-total">@((selectedOrder.Subtotal + formTipAmount).ToString("C"))</span>
                 </div>
 
@@ -266,10 +266,10 @@
                 }
 
                 <div class="ord-form-actions">
-                    <button class="ord-btn ord-btn--cancel" @onclick="CloseCloseModal">Cancelar</button>
+                    <button class="ord-btn ord-btn--cancel" @onclick="CloseCloseModal">Cancel</button>
                     <button class="ord-btn ord-btn--confirm ord-btn--pay" @onclick="ConfirmCloseOrder"
                         disabled="@isModalSaving">
-                        @(isModalSaving ? "Procesando..." : "Confirmar Cobro")
+                        @(isModalSaving ? "Processing..." : "Confirm Payment")
                     </button>
                 </div>
             </div>
@@ -456,8 +456,8 @@
 
     private async Task CreateOrder()
     {
-        if (formTableNumber < 1) { modalError = "El número de mesa debe ser mayor a 0."; return; }
-        if (formEmployeeId == Guid.Empty) { modalError = "Selecciona un empleado."; return; }
+        if (formTableNumber < 1) { modalError = "Table number must be greater than 0."; return; }
+        if (formEmployeeId == Guid.Empty) { modalError = "Please select an employee."; return; }
 
         isModalSaving = true;
         modalError = null;
@@ -472,7 +472,7 @@
             CloseCreateModal();
             await LoadOrders();
             SelectOrder(order);
-            ShowMessage($"Orden creada para Mesa {order.TableNumber}.", true);
+            ShowMessage($"Order created for Table {order.TableNumber}.", true);
         }
         catch (Exception ex) { modalError = $"Error: {ex.Message}"; }
         finally { isModalSaving = false; }
@@ -503,8 +503,8 @@
     private async Task AddItem()
     {
         if (selectedOrder is null) return;
-        if (formMenuItemId == Guid.Empty) { modalError = "Selecciona un producto."; return; }
-        if (formQuantity < 1) { modalError = "La cantidad debe ser al menos 1."; return; }
+        if (formMenuItemId == Guid.Empty) { modalError = "Please select an item."; return; }
+        if (formQuantity < 1) { modalError = "Quantity must be at least 1."; return; }
 
         isModalSaving = true;
         modalError = null;
@@ -518,7 +518,7 @@
             });
             CloseAddItemModal();
             await LoadOrders();
-            ShowMessage("Producto agregado.", true);
+            ShowMessage("Item added.", true);
         }
         catch (Exception ex) { modalError = $"Error: {ex.Message}"; }
         finally { isModalSaving = false; }
@@ -555,7 +555,7 @@
             selectedOrder = null;
             selectedOrderId = null;
             await LoadOrders();
-            ShowMessage($"Orden de Mesa {table} cobrada con {formPaymentMethod}.", true);
+            ShowMessage($"Table {table} order charged with {formPaymentMethod}.", true);
         }
         catch (Exception ex) { modalError = $"Error: {ex.Message}"; }
         finally { isModalSaving = false; }
@@ -570,7 +570,7 @@
         try
         {
             await Mediator.Send(new VoidOrderCommand { OrderId = selectedOrder.Id });
-            ShowMessage($"Orden de Mesa {selectedOrder.TableNumber} anulada.", true);
+            ShowMessage($"Table {selectedOrder.TableNumber} order voided.", true);
             selectedOrder = null;
             selectedOrderId = null;
             await LoadOrders();

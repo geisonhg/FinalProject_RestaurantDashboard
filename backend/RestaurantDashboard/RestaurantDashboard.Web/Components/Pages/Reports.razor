@@ -14,13 +14,13 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthStateProvider
 
-<PageTitle>Reportes</PageTitle>
+<PageTitle>Reports</PageTitle>
 
 <div class="rpt-page">
     <div class="rpt-header">
         <div>
-            <h1 class="rpt-title">Reportes</h1>
-            <p class="rpt-subtitle">Generación de informes PDF e importación de gastos</p>
+            <h1 class="rpt-title">Reports</h1>
+            <p class="rpt-subtitle">PDF report generation and expense import</p>
         </div>
     </div>
 
@@ -34,41 +34,41 @@
                     <polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/>
                     <line x1="9" y1="15" x2="15" y2="15"/>
                 </svg>
-                Generar Reporte
+                Generate Report
             </div>
 
             <div class="rpt-form">
                 <div class="rpt-row">
                     <div class="rpt-field">
-                        <label class="rpt-label">Desde</label>
+                        <label class="rpt-label">From</label>
                         <input class="rpt-input" type="date" @bind="genFrom" />
                     </div>
                     <div class="rpt-field">
-                        <label class="rpt-label">Hasta</label>
+                        <label class="rpt-label">To</label>
                         <input class="rpt-input" type="date" @bind="genTo" />
                     </div>
                 </div>
 
                 <div class="rpt-field">
-                    <label class="rpt-label">Tipo de Reporte</label>
+                    <label class="rpt-label">Report Type</label>
                     <div class="rpt-radio-group">
                         <label class="rpt-radio">
                             <input type="radio" name="repType" value="Weekly"
                                    checked="@(genType == ReportType.Weekly)"
                                    @onchange="() => genType = ReportType.Weekly" />
-                            <span>Semanal</span>
+                            <span>Weekly</span>
                         </label>
                         <label class="rpt-radio">
                             <input type="radio" name="repType" value="Monthly"
                                    checked="@(genType == ReportType.Monthly)"
                                    @onchange="() => genType = ReportType.Monthly" />
-                            <span>Mensual</span>
+                            <span>Monthly</span>
                         </label>
                     </div>
                 </div>
 
                 <button class="rpt-btn rpt-btn--primary" @onclick="GenerateReport" disabled="@isGenerating">
-                    @(isGenerating ? "Generando..." : "⬇ Generar PDF")
+                    @(isGenerating ? "Generating..." : "⬇ Generate PDF")
                 </button>
 
                 @if (genMessage is not null)
@@ -87,19 +87,19 @@
                     <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
                     <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
                 </svg>
-                Importar Gastos CSV
+                Import CSV Expenses
             </div>
 
             <div class="rpt-form">
                 <div class="rpt-csv-hint">
-                    <span class="rpt-csv-hint__title">Formato esperado del CSV</span>
+                    <span class="rpt-csv-hint__title">Expected CSV format</span>
                     <code class="rpt-csv-hint__code">Date,Category,Amount,Description</code>
-                    <span class="rpt-csv-hint__cats">Categorías: Food, Beverage, Utilities, Wages, Maintenance, Marketing, Other</span>
+                    <span class="rpt-csv-hint__cats">Categories: Food, Beverage, Utilities, Wages, Maintenance, Marketing, Other</span>
                 </div>
 
                 <label class="rpt-file-label">
                     <InputFile OnChange="OnFileSelected" accept=".csv" />
-                    <span class="rpt-file-btn">📂 Seleccionar archivo CSV</span>
+                    <span class="rpt-file-btn">📂 Select CSV file</span>
                     @if (csvFileName is not null)
                     {
                         <span class="rpt-file-name">@csvFileName</span>
@@ -108,7 +108,7 @@
 
                 <button class="rpt-btn rpt-btn--accent" @onclick="ImportCsv"
                         disabled="@(isImporting || csvBytes is null)">
-                    @(isImporting ? "Importando..." : "↑ Importar")
+                    @(isImporting ? "Importing..." : "↑ Import")
                 </button>
 
                 @if (csvMessage is not null)
@@ -125,15 +125,15 @@
     @* ── Reports List ── *@
     <div class="rpt-list-section">
         <div class="rpt-list-head">
-            <span class="rpt-list-title">Reportes Generados</span>
-            <button class="rpt-btn rpt-btn--ghost" @onclick="LoadReports">↻ Actualizar</button>
+            <span class="rpt-list-title">Generated Reports</span>
+            <button class="rpt-btn rpt-btn--ghost" @onclick="LoadReports">↻ Refresh</button>
         </div>
 
         @if (isLoading)
         {
             <div class="rpt-loading">
                 <div class="rpt-spinner"></div>
-                <span>Cargando reportes...</span>
+                <span>Loading reports...</span>
             </div>
         }
         else if (reports is not null && reports.Any())
@@ -142,10 +142,10 @@
                 <table class="rpt-table">
                     <thead>
                         <tr>
-                            <th>Tipo</th>
-                            <th>Período</th>
-                            <th>Generado</th>
-                            <th>Descargar</th>
+                            <th>Type</th>
+                            <th>Period</th>
+                            <th>Generated</th>
+                            <th>Download</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -174,7 +174,7 @@
         {
             <div class="rpt-empty">
                 <span>📋</span>
-                <p>No hay reportes generados aún. ¡Genera tu primer reporte!</p>
+                <p>No reports generated yet. Generate your first report!</p>
             </div>
         }
     </div>
@@ -307,8 +307,8 @@
 
     private async Task GenerateReport()
     {
-        if (_employeeId is null) { genMessage = "No se pudo determinar el empleado actual."; genSuccess = false; return; }
-        if (genFrom >= genTo) { genMessage = "La fecha de inicio debe ser anterior a la fecha de fin."; genSuccess = false; return; }
+        if (_employeeId is null) { genMessage = "Could not determine the current employee."; genSuccess = false; return; }
+        if (genFrom >= genTo) { genMessage = "Start date must be before end date."; genSuccess = false; return; }
 
         isGenerating = true;
         genMessage = null;
@@ -321,7 +321,7 @@
                 Type = genType,
                 GeneratedByEmployeeId = _employeeId.Value,
             });
-            genMessage = $"Reporte generado correctamente (ID: {reportId:N}).";
+            genMessage = $"Report generated successfully (ID: {reportId:N}).";
             genSuccess = true;
             await LoadReports();
         }
@@ -356,7 +356,7 @@
                 CsvContent = csvBytes,
                 RecordedByEmployeeId = _employeeId.Value,
             });
-            csvMessage = $"{count} gasto(s) importado(s) correctamente.";
+            csvMessage = $"{count} expense(s) imported successfully.";
             csvSuccess = true;
             csvBytes = null;
             csvFileName = null;

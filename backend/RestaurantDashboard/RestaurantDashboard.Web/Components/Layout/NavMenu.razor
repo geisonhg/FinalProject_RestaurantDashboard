@@ -5,7 +5,7 @@
 
 <nav class="sidenav">
     <div class="sidenav-section">
-        <span class="sidenav-section-label">Principal</span>
+        <span class="sidenav-section-label">Main</span>
         <NavLink class="sidenav-link" href="/dashboard" Match="NavLinkMatch.All">
             <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                 <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -18,14 +18,14 @@
                 <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
                 <rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
             </svg>
-            Órdenes
+            Orders
         </NavLink>
         <NavLink class="sidenav-link" href="/menu">
             <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
                 <path d="M8 12h8M12 8v8"/>
             </svg>
-            Menú
+            Menu
         </NavLink>
         <AuthorizeView Policy="ManagerPlus">
             <NavLink class="sidenav-link" href="/expenses">
@@ -33,14 +33,14 @@
                     <rect x="2" y="5" width="20" height="14" rx="2"/>
                     <line x1="2" y1="10" x2="22" y2="10"/>
                 </svg>
-                Gastos
+                Expenses
             </NavLink>
             <NavLink class="sidenav-link" href="/staff">
                 <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>
                     <path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/>
                 </svg>
-                Personal
+                Staff
             </NavLink>
         </AuthorizeView>
         <AuthorizeView Policy="CanGenerateReports">
@@ -51,7 +51,7 @@
                     <line x1="12" y1="18" x2="12" y2="12"/>
                     <line x1="9" y1="15" x2="15" y2="15"/>
                 </svg>
-                Reportes
+                Reports
             </NavLink>
         </AuthorizeView>
     </div>
@@ -59,7 +59,7 @@
     <AuthorizeView>
         <Authorized>
             <div class="sidenav-section sidenav-section--bottom">
-                <span class="sidenav-section-label">Cuenta</span>
+                <span class="sidenav-section-label">Account</span>
                 <NavLink class="sidenav-link" href="/Account/Manage">
                     <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
@@ -73,7 +73,7 @@
                         <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                             <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
                         </svg>
-                        Cerrar Sesión
+                        Log Out
                     </button>
                 </form>
             </div>
@@ -84,7 +84,7 @@
                     <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
                     </svg>
-                    Iniciar Sesión
+                    Log In
                 </NavLink>
             </div>
         </NotAuthorized>

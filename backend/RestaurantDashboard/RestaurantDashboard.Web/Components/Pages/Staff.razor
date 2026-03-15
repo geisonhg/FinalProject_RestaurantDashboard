@@ -13,24 +13,24 @@
 @using RestaurantDashboard.Domain.Enums
 @inject IMediator Mediator
 
-<PageTitle>Personal</PageTitle>
+<PageTitle>Staff</PageTitle>
 
 <div class="st-page">
     <div class="st-header">
         <div>
-            <h1 class="st-title">Personal</h1>
-            <p class="st-subtitle">Gestión de empleados y seguimiento de turnos</p>
+            <h1 class="st-title">Staff</h1>
+            <p class="st-subtitle">Employee management and shift tracking</p>
         </div>
-        <button class="st-btn st-btn--add" @onclick="OpenCreateForm">+ Nuevo Empleado</button>
+        <button class="st-btn st-btn--add" @onclick="OpenCreateForm">+ New Employee</button>
     </div>
 
     @* ── Performance section ── *@
     <div class="st-perf-header">
-        <span class="st-section-label">Rendimiento del período</span>
+        <span class="st-section-label">Period performance</span>
         <div class="st-perf-filters">
             <input class="st-input" type="date" @bind="perfFrom" />
             <input class="st-input" type="date" @bind="perfTo" />
-            <button class="st-btn st-btn--filter" @onclick="LoadPerformance">Ver</button>
+            <button class="st-btn st-btn--filter" @onclick="LoadPerformance">View</button>
         </div>
     </div>
 
@@ -45,19 +45,19 @@
                     <div class="st-perf-stats">
                         <div class="st-stat">
                             <span class="st-stat__val">@p.TotalShifts</span>
-                            <span class="st-stat__lbl">Turnos</span>
+                            <span class="st-stat__lbl">Shifts</span>
                         </div>
                         <div class="st-stat">
                             <span class="st-stat__val">@p.TotalHoursWorked.ToString("F1")h</span>
-                            <span class="st-stat__lbl">Horas</span>
+                            <span class="st-stat__lbl">Hours</span>
                         </div>
                         <div class="st-stat">
                             <span class="st-stat__val">@p.TotalTipsEarned.ToString("C")</span>
-                            <span class="st-stat__lbl">Propinas</span>
+                            <span class="st-stat__lbl">Tips</span>
                         </div>
                         <div class="st-stat">
                             <span class="st-stat__val">@p.TotalSalesAmount.ToString("C")</span>
-                            <span class="st-stat__lbl">Ventas</span>
+                            <span class="st-stat__lbl">Sales</span>
                         </div>
                     </div>
                 </div>
@@ -66,19 +66,19 @@
     }
     else if (!isPerfLoading)
     {
-        <div class="st-perf-empty">Sin datos de rendimiento para el período.</div>
+        <div class="st-perf-empty">No performance data for the selected period.</div>
     }
 
     @* ── Employee table ── *@
-    <div class="st-section-label" style="margin-top:2rem;">Empleados activos</div>
+    <div class="st-section-label" style="margin-top:2rem;">Active employees</div>
 
     @if (isLoading)
     {
-        <div class="st-loading"><div class="st-spinner"></div><span>Cargando personal...</span></div>
+        <div class="st-loading"><div class="st-spinner"></div><span>Loading staff...</span></div>
     }
     else if (employees is null || !employees.Any())
     {
-        <div class="st-empty">No hay empleados activos.</div>
+        <div class="st-empty">No active employees.</div>
     }
     else
     {
@@ -86,11 +86,11 @@
             <table class="st-table">
                 <thead>
                     <tr>
-                        <th>Nombre</th>
-                        <th>Rol</th>
-                        <th>Ingreso</th>
-                        <th>Turno</th>
-                        <th>Acciones</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Hire Date</th>
+                        <th>Shift</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,11 +103,11 @@
                             <td>
                                 @if (emp.ActiveShiftId.HasValue)
                                 {
-                                    <span class="st-shift-badge st-shift-badge--active">En turno</span>
+                                    <span class="st-shift-badge st-shift-badge--active">On shift</span>
                                 }
                                 else
                                 {
-                                    <span class="st-shift-badge st-shift-badge--off">Sin turno</span>
+                                    <span class="st-shift-badge st-shift-badge--off">No shift</span>
                                 }
                             </td>
                             <td class="st-actions">
@@ -115,17 +115,17 @@
                                 {
                                     <button class="st-btn st-btn--clockin" @onclick="() => ClockIn(emp.Id)"
                                         disabled="@(actionEmployeeId == emp.Id)">
-                                        @(actionEmployeeId == emp.Id ? "..." : "Entrada")
+                                        @(actionEmployeeId == emp.Id ? "..." : "Clock In")
                                     </button>
                                 }
                                 else
                                 {
                                     <button class="st-btn st-btn--clockout" @onclick="() => OpenClockOutModal(emp)"
                                         disabled="@(actionEmployeeId == emp.Id)">
-                                        @(actionEmployeeId == emp.Id ? "..." : "Salida")
+                                        @(actionEmployeeId == emp.Id ? "..." : "Clock Out")
                                     </button>
                                 }
-                                <button class="st-btn st-btn--edit" @onclick="() => OpenEditForm(emp)">Editar</button>
+                                <button class="st-btn st-btn--edit" @onclick="() => OpenEditForm(emp)">Edit</button>
                                 <button class="st-btn st-btn--delete" @onclick="() => ConfirmDeleteEmployee(emp)">🗑️</button>
                             </td>
                         </tr>
@@ -144,7 +144,7 @@
                             @onclick="() => _stPage = pNum">@pNum</button>
                 }
                 <button class="st-page-btn" disabled="@(_stPage == StTotalPages)" @onclick="() => _stPage++">›</button>
-                <span class="st-page-info">@((_stPage - 1) * StPageSize + 1)–@(Math.Min(_stPage * StPageSize, employees.Count)) de @employees.Count</span>
+                <span class="st-page-info">@((_stPage - 1) * StPageSize + 1)–@(Math.Min(_stPage * StPageSize, employees.Count)) of @employees.Count</span>
             </div>
         }
     }
@@ -160,16 +160,16 @@
 {
     <div class="st-modal-backdrop" @onclick="CancelDeleteEmployee">
         <div class="st-modal" @onclick:stopPropagation>
-            <h2 class="st-modal__title">Eliminar empleado</h2>
-            <p class="st-modal__sub">¿Estás seguro que querés eliminar a <strong>@employeeToDelete.FullName</strong>? Esta acción no se puede deshacer.</p>
+            <h2 class="st-modal__title">Delete employee</h2>
+            <p class="st-modal__sub">Are you sure you want to delete <strong>@employeeToDelete.FullName</strong>? This action cannot be undone.</p>
             @if (deleteError is not null)
             {
                 <div class="st-form-error">@deleteError</div>
             }
             <div class="st-form-actions">
-                <button class="st-btn st-btn--cancel" @onclick="CancelDeleteEmployee">Cancelar</button>
+                <button class="st-btn st-btn--cancel" @onclick="CancelDeleteEmployee">Cancel</button>
                 <button class="st-btn st-btn--delete-confirm" @onclick="ExecuteDeleteEmployee" disabled="@isDeleting">
-                    @(isDeleting ? "Eliminando..." : "Sí, eliminar")
+                    @(isDeleting ? "Deleting..." : "Yes, delete")
                 </button>
             </div>
         </div>
@@ -181,16 +181,16 @@
 {
     <div class="st-modal-backdrop" @onclick="CloseForm">
         <div class="st-modal" @onclick:stopPropagation>
-            <h2 class="st-modal__title">@(isEditing ? "Editar Empleado" : "Nuevo Empleado")</h2>
+            <h2 class="st-modal__title">@(isEditing ? "Edit Employee" : "New Employee")</h2>
 
             <div class="st-form">
-                <label class="st-label">Nombre</label>
-                <input class="st-input" @bind="formFirstName" placeholder="Nombre" />
+                <label class="st-label">First Name</label>
+                <input class="st-input" @bind="formFirstName" placeholder="First name" />
 
-                <label class="st-label">Apellido</label>
-                <input class="st-input" @bind="formLastName" placeholder="Apellido" />
+                <label class="st-label">Last Name</label>
+                <input class="st-input" @bind="formLastName" placeholder="Last name" />
 
-                <label class="st-label">Rol</label>
+                <label class="st-label">Role</label>
                 <select class="st-input" @bind="formRole">
                     @foreach (var role in Enum.GetValues<EmployeeRole>())
                     {
@@ -200,13 +200,13 @@
 
                 @if (!isEditing)
                 {
-                    <label class="st-label">Fecha de ingreso</label>
+                    <label class="st-label">Hire date</label>
                     <input class="st-input" type="date" @bind="formHireDate" />
                 }
                 else
                 {
                     <label class="st-checkbox-label">
-                        <input type="checkbox" @bind="formIsActive" /> Empleado activo
+                        <input type="checkbox" @bind="formIsActive" /> Active employee
                     </label>
                 }
 
@@ -216,9 +216,9 @@
                 }
 
                 <div class="st-form-actions">
-                    <button class="st-btn st-btn--cancel" @onclick="CloseForm">Cancelar</button>
+                    <button class="st-btn st-btn--cancel" @onclick="CloseForm">Cancel</button>
                     <button class="st-btn st-btn--save" @onclick="SaveEmployee" disabled="@isSaving">
-                        @(isSaving ? "Guardando..." : "Guardar")
+                        @(isSaving ? "Saving..." : "Save")
                     </button>
                 </div>
             </div>
@@ -231,11 +231,11 @@
 {
     <div class="st-modal-backdrop" @onclick="CloseClockOutModal">
         <div class="st-modal" @onclick:stopPropagation>
-            <h2 class="st-modal__title">Registrar Salida</h2>
+            <h2 class="st-modal__title">Clock Out</h2>
             <p class="st-modal__sub">@clockOutEmployee.FullName</p>
 
             <div class="st-form">
-                <label class="st-label">Propinas ganadas (€)</label>
+                <label class="st-label">Tips earned (€)</label>
                 <input class="st-input" type="number" step="0.01" min="0" @bind="clockOutTips" />
 
                 @if (formError is not null)
@@ -244,9 +244,9 @@
                 }
 
                 <div class="st-form-actions">
-                    <button class="st-btn st-btn--cancel" @onclick="CloseClockOutModal">Cancelar</button>
+                    <button class="st-btn st-btn--cancel" @onclick="CloseClockOutModal">Cancel</button>
                     <button class="st-btn st-btn--save" @onclick="ConfirmClockOut" disabled="@isSaving">
-                        @(isSaving ? "Registrando..." : "Confirmar Salida")
+                        @(isSaving ? "Saving..." : "Confirm Clock Out")
                     </button>
                 </div>
             </div>
@@ -401,7 +401,7 @@
             await Mediator.Send(new ClockInCommand { EmployeeId = employeeId });
             await LoadEmployees();
         }
-        catch (Exception ex) { actionError = $"Error al registrar entrada: {ex.Message}"; }
+        catch (Exception ex) { actionError = $"Error clocking in: {ex.Message}"; }
         finally { actionEmployeeId = null; }
     }
 
@@ -487,8 +487,8 @@
 
     private async Task SaveEmployee()
     {
-        if (string.IsNullOrWhiteSpace(formFirstName)) { formError = "El nombre es requerido."; return; }
-        if (string.IsNullOrWhiteSpace(formLastName)) { formError = "El apellido es requerido."; return; }
+        if (string.IsNullOrWhiteSpace(formFirstName)) { formError = "First name is required."; return; }
+        if (string.IsNullOrWhiteSpace(formLastName)) { formError = "Last name is required."; return; }
 
         isSaving = true;
         formError = null;

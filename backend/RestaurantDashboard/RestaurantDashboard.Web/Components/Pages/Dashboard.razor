@@ -37,39 +37,39 @@
     {
         <div class="kpi-row">
             <div class="kpi kpi--green">
-                <div class="kpi__label">Ingresos</div>
+                <div class="kpi__label">Revenue</div>
                 <div class="kpi__value">€@summary.TotalRevenue.ToString("N2")</div>
-                <div class="kpi__sub">Total del período</div>
+                <div class="kpi__sub">Period total</div>
                 <div class="kpi__bar"></div>
             </div>
             <div class="kpi kpi--blue">
-                <div class="kpi__label">Ganancia Neta</div>
+                <div class="kpi__label">Net Profit</div>
                 <div class="kpi__value">€@summary.NetProfit.ToString("N2")</div>
-                <div class="kpi__sub">Ingresos − Gastos</div>
+                <div class="kpi__sub">Revenue − Expenses</div>
                 <div class="kpi__bar"></div>
             </div>
             <div class="kpi kpi--red">
-                <div class="kpi__label">Gastos</div>
+                <div class="kpi__label">Expenses</div>
                 <div class="kpi__value">€@summary.TotalExpenses.ToString("N2")</div>
-                <div class="kpi__sub">Total del período</div>
+                <div class="kpi__sub">Period total</div>
                 <div class="kpi__bar"></div>
             </div>
             <div class="kpi kpi--amber">
-                <div class="kpi__label">Propinas</div>
+                <div class="kpi__label">Tips</div>
                 <div class="kpi__value">€@summary.TotalTips.ToString("N2")</div>
-                <div class="kpi__sub">Acumuladas</div>
+                <div class="kpi__sub">Accumulated</div>
                 <div class="kpi__bar"></div>
             </div>
             <div class="kpi kpi--purple">
-                <div class="kpi__label">Transacciones</div>
+                <div class="kpi__label">Transactions</div>
                 <div class="kpi__value">@summary.TotalTransactions</div>
-                <div class="kpi__sub">Órdenes cerradas</div>
+                <div class="kpi__sub">Closed orders</div>
                 <div class="kpi__bar"></div>
             </div>
             <div class="kpi kpi--cyan">
-                <div class="kpi__label">Ticket Promedio</div>
+                <div class="kpi__label">Avg. Ticket</div>
                 <div class="kpi__value">€@summary.AverageOrderValue.ToString("N2")</div>
-                <div class="kpi__sub">Por orden</div>
+                <div class="kpi__sub">Per order</div>
                 <div class="kpi__bar"></div>
             </div>
         </div>
@@ -79,7 +79,7 @@
             {
                 <div class="dash-card dash-card--wide">
                     <div class="dash-card__head">
-                        <span class="dash-card__title">Ingresos por Método de Pago</span>
+                        <span class="dash-card__title">Revenue by Payment Method</span>
                     </div>
                     <div class="chart-wrap">
                         <canvas id="paymentChart"></canvas>
@@ -91,8 +91,8 @@
             {
                 <div class="dash-card">
                     <div class="dash-card__head">
-                        <span class="dash-card__title">Top Productos</span>
-                        <span class="dash-card__badge">por ventas</span>
+                        <span class="dash-card__title">Top Products</span>
+                        <span class="dash-card__badge">by sales</span>
                     </div>
                     <div class="rank-list">
                         @{ int rank = 1; var maxVal = summary.TopSellingItems.Values.Max(); }
@@ -117,7 +117,7 @@
             {
                 <div class="dash-card">
                     <div class="dash-card__head">
-                        <span class="dash-card__title">Gastos por Categoría</span>
+                        <span class="dash-card__title">Expenses by Category</span>
                         <span class="dash-card__badge">€@summary.TotalExpenses.ToString("N0") total</span>
                     </div>
                     <div class="expense-list">
@@ -130,7 +130,7 @@
                                     <span class="expense-val">€@exp.Value.ToString("N2")</span>
                                 </div>
                                 <div class="expense-track"><div class="expense-fill" style="width:@pct%"></div></div>
-                                <span class="expense-pct">@pct% del total</span>
+                                <span class="expense-pct">@pct% of total</span>
                             </div>
                         }
                     </div>
@@ -141,11 +141,11 @@
             {
                 <div class="dash-card">
                     <div class="dash-card__head">
-                        <span class="dash-card__title">Desglose de Pagos</span>
+                        <span class="dash-card__title">Payment Breakdown</span>
                         <span class="dash-card__badge">@summary.TotalTransactions tx</span>
                     </div>
                     <table class="data-table">
-                        <thead><tr><th>Método</th><th>Ingresos</th><th>Tx</th></tr></thead>
+                        <thead><tr><th>Method</th><th>Revenue</th><th>Tx</th></tr></thead>
                         <tbody>
                             @foreach (var m in summary.RevenueByPaymentMethod.OrderByDescending(x => x.Value))
                             {
@@ -167,7 +167,7 @@
     }
     else
     {
-        <div class="dash-empty">No hay datos para el período seleccionado.</div>
+        <div class="dash-empty">No data available for the selected period.</div>
     }
 </div>
 
