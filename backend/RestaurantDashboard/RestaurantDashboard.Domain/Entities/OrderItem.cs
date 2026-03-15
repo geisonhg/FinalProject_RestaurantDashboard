@@ -26,7 +26,7 @@ public sealed class OrderItem : Entity
             MenuItemId = menuItemId,
             MenuItemName = menuItemName,
             Quantity = quantity,
-            UnitPrice = unitPrice
+            UnitPrice = Money.From(unitPrice.Amount, unitPrice.Currency)
         };
     }
 
