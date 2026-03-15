@@ -41,8 +41,36 @@ public sealed class EmployeeRepository : IEmployeeRepository
     public async Task AddAsync(Employee employee, CancellationToken ct) =>
         await _context.Employees.AddAsync(employee, ct);
 
-    public void Update(Employee employee) =>
-        _context.Employees.Update(employee);
+    public void Update(Employee employee)
+    {
+        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+        try
+        {
+            var isTracked = _context.ChangeTracker.Entries<Employee>()
+                .Any(e => e.Entity.Id == employee.Id);
+
+            if (!isTracked)
+            {
+                _context.ChangeTracker.AutoDetectChangesEnabled = true;
+                _context.Employees.Update(employee);
+                return;
+            }
+
+            var trackedShiftIds = _context.ChangeTracker.Entries<Shift>()
+                .Select(e => e.Entity.Id)
+                .ToHashSet();
+
+            foreach (var shift in employee.Shifts)
+            {
+                if (!trackedShiftIds.Contains(shift.Id))
+                    _context.Add(shift);
+            }
+        }
+        finally
+        {
+            _context.ChangeTracker.AutoDetectChangesEnabled = true;
+        }
+    }
 
     public void Remove(Employee employee) =>
         _context.Employees.Remove(employee);
