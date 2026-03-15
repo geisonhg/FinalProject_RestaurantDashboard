@@ -29,7 +29,7 @@ public sealed class CloseOrderCommandHandler : IRequestHandler<CloseOrderCommand
         var order = await _orders.GetByIdWithItemsAsync(request.OrderId, cancellationToken)
             ?? throw new NotFoundException(nameof(Order), request.OrderId);
 
-        var sale = order.Close(request.PaymentMethod, request.TipAmount);
+        var sale = order.Close(request.PaymentMethod, request.TipAmount, request.DiscountAmount);
 
         await _sales.AddAsync(sale, cancellationToken);
         _orders.Update(order);

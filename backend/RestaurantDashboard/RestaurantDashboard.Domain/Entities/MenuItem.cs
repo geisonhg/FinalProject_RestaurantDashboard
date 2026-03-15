@@ -10,10 +10,11 @@ public sealed class MenuItem : AggregateRoot
     public string? Description { get; private set; }
     public Money BasePrice { get; private set; } = default!;
     public bool IsAvailable { get; private set; }
+    public int? StockQuantity { get; private set; }
 
     private MenuItem() { }
 
-    public static MenuItem Create(string name, string category, decimal basePrice, string? description = null)
+    public static MenuItem Create(string name, string category, decimal basePrice, string? description = null, int? stockQuantity = null)
     {
         Guard.AgainstNullOrEmpty(name, nameof(name));
         Guard.AgainstNullOrEmpty(category, nameof(category));
@@ -25,8 +26,16 @@ public sealed class MenuItem : AggregateRoot
             Category = category,
             Description = description,
             BasePrice = Money.From(basePrice),
-            IsAvailable = true
+            IsAvailable = true,
+            StockQuantity = stockQuantity
         };
+    }
+
+    public void SetStock(int? quantity)
+    {
+        if (quantity.HasValue && quantity.Value < 0)
+            throw new ArgumentException("Stock quantity cannot be negative.");
+        StockQuantity = quantity;
     }
 
     public void UpdatePrice(decimal newPrice) =>

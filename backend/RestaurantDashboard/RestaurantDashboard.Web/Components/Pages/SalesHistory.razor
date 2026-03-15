@@ -36,6 +36,10 @@
                 }
             </select>
         </div>
+        <div class="sh-filter-group">
+            <label class="sh-label">Table</label>
+            <input class="sh-input" type="number" min="1" placeholder="Any" @bind="filterTable" style="width:80px" />
+        </div>
         <button class="sh-btn sh-btn--search" @onclick="Search">🔍 Search</button>
         @if (orders is not null && orders.Any())
         {
@@ -98,6 +102,7 @@
                             <th class="sh-th-sort" @onclick='() => SetSort("Total")'>
                                 Total @SortIcon("Total")
                             </th>
+                            <th>Discount</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -112,6 +117,7 @@
                                 <td><span class="sh-table-badge">@(order.PaymentMethod ?? "—")</span></td>
                                 <td class="sh-cell-tip">@(order.TipAmount > 0 ? order.TipAmount.ToString("C") : "—")</td>
                                 <td class="sh-cell-total">@order.Subtotal.ToString("C")</td>
+                                <td class="sh-cell-discount">@(order.DiscountAmount > 0 ? order.DiscountAmount.ToString("C") : "—")</td>
                                 <td>
                                     <button class="sh-expand-btn" @onclick="() => ToggleExpand(order.Id)">
                                         @(expandedOrderId == order.Id ? "▲ Hide" : "▼ Details")
@@ -121,7 +127,7 @@
                             @if (expandedOrderId == order.Id)
                             {
                                 <tr class="sh-detail-row">
-                                    <td colspan="8">
+                                    <td colspan="9">
                                         <div class="sh-detail">
                                             <table class="sh-detail-table">
                                                 <thead>
@@ -227,6 +233,7 @@
     .sh-cell-count { color: #64748b; font-size: 0.85rem; }
     .sh-cell-total { color: #10b981; font-weight: 700; font-size: 1rem; }
     .sh-cell-tip { color: #f59e0b; font-weight: 600; }
+    .sh-cell-discount { color: #f87171; font-weight: 600; }
     .sh-table-badge { background: #0f1117; border: 1px solid #2d3748; color: #94a3b8; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 20px; white-space: nowrap; }
 
     .sh-expand-btn { background: none; border: 1px solid #2d3748; color: #64748b; padding: 0.3rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; transition: all 0.15s; white-space: nowrap; }
@@ -263,6 +270,7 @@
     private DateOnly filterFrom = DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
     private DateOnly filterTo = DateOnly.FromDateTime(DateTime.Today);
     private string filterEmployee = "";
+    private string filterTable = "";
 
     private string sortBy = "ClosedAt";
     private bool sortDesc = true;
@@ -283,6 +291,8 @@
             var q = (orders ?? []).AsEnumerable();
             if (!string.IsNullOrEmpty(filterEmployee))
                 q = q.Where(o => o.EmployeeName == filterEmployee);
+            if (!string.IsNullOrWhiteSpace(filterTable) && int.TryParse(filterTable, out var tnum))
+                q = q.Where(o => o.TableNumber == tnum);
             q = sortBy switch
             {
                 "Table"   => sortDesc ? q.OrderByDescending(o => o.TableNumber) : q.OrderBy(o => o.TableNumber),
@@ -309,6 +319,7 @@
         _page = 1;
         expandedOrderId = null;
         filterEmployee = "";
+        filterTable = "";
         try
         {
             orders = await Mediator.Send(new GetClosedOrdersQuery { From = filterFrom, To = filterTo });
@@ -341,7 +352,7 @@
     private async Task ExportCsv()
     {
         var rows = new System.Text.StringBuilder();
-        rows.AppendLine("Closed At,Table,Employee,Items,Payment,Tip,Subtotal");
+        rows.AppendLine("Closed At,Table,Employee,Items,Payment,Tip,Subtotal,Discount");
         foreach (var o in FilteredOrders)
         {
             rows.AppendLine(
@@ -351,7 +362,8 @@
                 $"{o.Items.Count}," +
                 $"{o.PaymentMethod ?? ""}," +
                 $"{o.TipAmount:F2}," +
-                $"{o.Subtotal:F2}");
+                $"{o.Subtotal:F2}," +
+                $"{o.DiscountAmount:F2}");
         }
         var filename = $"sales-history-{filterFrom:yyyy-MM-dd}-to-{filterTo:yyyy-MM-dd}.csv";
         await JS.InvokeVoidAsync("downloadCsv", filename, rows.ToString());

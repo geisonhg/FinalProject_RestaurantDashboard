@@ -11,4 +11,5 @@ public sealed record UpdateMenuItemCommand : IRequest<MenuItemDto>
     public string? Description { get; init; }
     public decimal BasePrice { get; init; }
     public bool IsAvailable { get; init; }
+    public int? StockQuantity { get; init; }
 }

@@ -1,0 +1,175 @@
+@page "/payroll"
+@attribute [Authorize(Policy = "ManagerPlus")]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using MediatR
+@using RestaurantDashboard.Application.Employees.Queries.GetPayrollSummary
+@using RestaurantDashboard.Application.Employees.Dtos
+@inject IMediator Mediator
+@inject IJSRuntime JS
+
+<PageTitle>Payroll</PageTitle>
+
+<div class="pr-page">
+    <div class="pr-header">
+        <div>
+            <h1 class="pr-title">Payroll</h1>
+            <p class="pr-subtitle">Hours worked and tips by employee</p>
+        </div>
+    </div>
+
+    <div class="pr-filters">
+        <div class="pr-filter-group">
+            <label class="pr-label">From</label>
+            <input class="pr-input" type="date" @bind="filterFrom" />
+        </div>
+        <div class="pr-filter-group">
+            <label class="pr-label">To</label>
+            <input class="pr-input" type="date" @bind="filterTo" />
+        </div>
+        <button class="pr-btn pr-btn--search" @onclick="Load">🔍 Search</button>
+        @if (rows is not null && rows.Any())
+        {
+            <button class="pr-btn pr-btn--export" @onclick="ExportCsv">⬇ Export CSV</button>
+        }
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="pr-loading"><div class="pr-spinner"></div><span>Loading...</span></div>
+    }
+    else if (rows is not null)
+    {
+        @if (rows.Any())
+        {
+            <div class="pr-summary">
+                <div class="pr-chip">
+                    <span class="pr-chip__label">Employees</span>
+                    <span class="pr-chip__value">@rows.Count</span>
+                </div>
+                <div class="pr-chip">
+                    <span class="pr-chip__label">Total Hours</span>
+                    <span class="pr-chip__value">@rows.Sum(r => r.TotalHours).ToString("N1")h</span>
+                </div>
+                <div class="pr-chip">
+                    <span class="pr-chip__label">Total Tips</span>
+                    <span class="pr-chip__value pr-chip__value--green">@rows.Sum(r => r.TotalTips).ToString("C")</span>
+                </div>
+                <div class="pr-chip">
+                    <span class="pr-chip__label">Total Shifts</span>
+                    <span class="pr-chip__value">@rows.Sum(r => r.ShiftCount)</span>
+                </div>
+            </div>
+
+            <div class="pr-table-wrap">
+                <table class="pr-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Role</th>
+                            <th class="pr-right">Shifts</th>
+                            <th class="pr-right">Hours</th>
+                            <th class="pr-right">Avg h/shift</th>
+                            <th class="pr-right">Tips</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in rows)
+                        {
+                            <tr>
+                                <td class="pr-name">@r.FullName</td>
+                                <td><span class="pr-role">@r.Role</span></td>
+                                <td class="pr-right">@r.ShiftCount</td>
+                                <td class="pr-right pr-hours">@r.TotalHours.ToString("N1")h</td>
+                                <td class="pr-right pr-avg">@(r.ShiftCount > 0 ? (r.TotalHours / r.ShiftCount).ToString("N1") : "0.0")h</td>
+                                <td class="pr-right pr-tips">@r.TotalTips.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" class="pr-total-label">Total</td>
+                            <td class="pr-right">@rows.Sum(r => r.ShiftCount)</td>
+                            <td class="pr-right pr-hours">@rows.Sum(r => r.TotalHours).ToString("N1")h</td>
+                            <td></td>
+                            <td class="pr-right pr-tips">@rows.Sum(r => r.TotalTips).ToString("C")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="pr-empty">No completed shifts found for the selected period.</div>
+        }
+    }
+</div>
+
+<style>
+    .pr-page { padding: 2rem; background: #0f1117; min-height: 100vh; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; }
+    .pr-header { margin-bottom: 1.5rem; }
+    .pr-title { font-size: 2rem; font-weight: 700; color: #f8fafc; margin: 0; }
+    .pr-subtitle { color: #64748b; margin: 0.25rem 0 0; }
+    .pr-filters { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .pr-filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .pr-label { font-size: 0.8rem; color: #94a3b8; }
+    .pr-input { background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; padding: 0.6rem 0.9rem; border-radius: 8px; font-size: 0.9rem; }
+    .pr-input:focus { outline: none; border-color: #3b82f6; }
+    .pr-btn { padding: 0.6rem 1.25rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
+    .pr-btn--search { background: #3b82f6; color: white; align-self: flex-end; }
+    .pr-btn--search:hover { background: #2563eb; }
+    .pr-btn--export { background: #1e2433; border: 1px solid #2d3748; color: #94a3b8; align-self: flex-end; }
+    .pr-btn--export:hover { background: #2d3748; color: #e2e8f0; }
+    .pr-summary { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .pr-chip { background: #1e2433; border: 1px solid #2d3748; border-radius: 12px; padding: 0.75rem 1.25rem; min-width: 130px; }
+    .pr-chip__label { display: block; font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+    .pr-chip__value { font-size: 1.4rem; font-weight: 700; color: #f8fafc; }
+    .pr-chip__value--green { color: #10b981; }
+    .pr-table-wrap { overflow-x: auto; background: #1e2433; border: 1px solid #2d3748; border-radius: 14px; }
+    .pr-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .pr-table th { text-align: left; padding: 0.75rem 1rem; color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #2d3748; }
+    .pr-table td { padding: 0.85rem 1rem; border-bottom: 1px solid #1a2030; color: #e2e8f0; }
+    .pr-table tfoot td { border-top: 2px solid #2d3748; border-bottom: none; font-weight: 700; color: #f8fafc; }
+    .pr-table tr:hover td { background: #131825; }
+    .pr-right { text-align: right; }
+    .pr-name { font-weight: 600; color: #f8fafc; }
+    .pr-role { background: #1a2035; border: 1px solid #2d3748; border-radius: 20px; padding: 0.2rem 0.7rem; font-size: 0.78rem; color: #94a3b8; }
+    .pr-hours { color: #60a5fa; font-weight: 600; }
+    .pr-avg { color: #94a3b8; }
+    .pr-tips { color: #f59e0b; font-weight: 700; }
+    .pr-total-label { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .pr-loading { display: flex; align-items: center; gap: 1rem; padding: 3rem; color: #64748b; }
+    .pr-spinner { width: 28px; height: 28px; border: 3px solid #2d3748; border-top-color: #3b82f6; border-radius: 50%; animation: prSpin 0.8s linear infinite; }
+    @@keyframes prSpin { to { transform: rotate(360deg); } }
+    .pr-empty { text-align: center; padding: 3rem; color: #64748b; }
+</style>
+
+@code {
+    private IReadOnlyList<EmployeePayrollDto>? rows;
+    private bool isLoading = false;
+    private DateOnly filterFrom = DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
+    private DateOnly filterTo = DateOnly.FromDateTime(DateTime.Today);
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        isLoading = true;
+        try { rows = await Mediator.Send(new GetPayrollSummaryQuery { From = filterFrom, To = filterTo }); }
+        catch { rows = []; }
+        finally { isLoading = false; }
+    }
+
+    private async Task ExportCsv()
+    {
+        if (rows is null) return;
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("Employee,Role,Shifts,Total Hours,Avg h/Shift,Total Tips");
+        foreach (var r in rows)
+        {
+            var avg = r.ShiftCount > 0 ? (r.TotalHours / r.ShiftCount).ToString("N1") : "0.0";
+            sb.AppendLine($"\"{r.FullName}\",{r.Role},{r.ShiftCount},{r.TotalHours:N1},{avg},{r.TotalTips:F2}");
+        }
+        var filename = $"payroll-{filterFrom:yyyy-MM-dd}-to-{filterTo:yyyy-MM-dd}.csv";
+        await JS.InvokeVoidAsync("downloadCsv", filename, sb.ToString());
+    }
+}

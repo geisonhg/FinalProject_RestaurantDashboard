@@ -25,6 +25,7 @@ public sealed class UpdateMenuItemCommandHandler : IRequestHandler<UpdateMenuIte
         menuItem.Update(request.Name, request.Category, request.Description);
         menuItem.UpdatePrice(request.BasePrice);
         menuItem.SetAvailability(request.IsAvailable);
+        menuItem.SetStock(request.StockQuantity);
 
         _menuItems.Update(menuItem);
         await _uow.CommitAsync(cancellationToken);
@@ -36,7 +37,8 @@ public sealed class UpdateMenuItemCommandHandler : IRequestHandler<UpdateMenuIte
             Category = menuItem.Category,
             Description = menuItem.Description,
             BasePrice = menuItem.BasePrice.Amount,
-            IsAvailable = menuItem.IsAvailable
+            IsAvailable = menuItem.IsAvailable,
+            StockQuantity = menuItem.StockQuantity
         };
     }
 }

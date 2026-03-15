@@ -56,6 +56,12 @@
                     {
                         <div class="mn-item__desc">@item.Description</div>
                     }
+                    @if (item.StockQuantity.HasValue)
+                    {
+                        var stockClass = item.StockQuantity == 0 ? "mn-stock--out" : item.StockQuantity <= 5 ? "mn-stock--low" : "mn-stock--ok";
+                        var stockLabel = item.StockQuantity == 0 ? "Out of Stock" : item.StockQuantity <= 5 ? $"Low Stock ({item.StockQuantity})" : $"Stock: {item.StockQuantity}";
+                        <span class="mn-stock @stockClass">@stockLabel</span>
+                    }
                     <div class="mn-item__price">@item.BasePrice.ToString("C")</div>
                     <div class="mn-item__actions">
                         <button class="mn-btn mn-btn--edit" @onclick="() => OpenEditForm(item)">✏️ Edit</button>
@@ -106,6 +112,9 @@
 
                     <label>Description <span style="color:#64748b;font-weight:400">(optional)</span></label>
                     <textarea class="mn-input mn-textarea" @bind="formDescription" placeholder="Brief description of the dish..."></textarea>
+
+                    <label>Stock <span style="color:#64748b;font-weight:400">(leave empty = unlimited)</span></label>
+                    <input class="mn-input" type="number" min="0" @bind="formStockQuantity" placeholder="e.g. 20" />
 
                     <label>Base Price</label>
                     <input class="mn-input" type="number" step="0.01" @bind="formPrice" />
@@ -183,6 +192,10 @@
     .mn-checkbox-label { display: flex; align-items: center; gap: 0.5rem; color: #94a3b8; cursor: pointer; }
     .mn-form-error { background: #2d1515; border: 1px solid #ef4444; color: #fca5a5; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; }
     .mn-form-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem; }
+    .mn-stock { display:inline-block; font-size:0.72rem; padding:0.15rem 0.5rem; border-radius:20px; font-weight:600; margin-bottom:0.35rem; }
+    .mn-stock--ok { background:#0a2e1a; color:#10b981; }
+    .mn-stock--low { background:#2d1f03; color:#f59e0b; }
+    .mn-stock--out { background:#2d1515; color:#ef4444; }
 </style>
 
 @code {
@@ -208,6 +221,7 @@
     private string formDescription = "";
     private decimal formPrice = 0;
     private bool formIsAvailable = true;
+    private int? formStockQuantity;
     private string? formError;
 
     private IEnumerable<string> categories => items == null
@@ -229,7 +243,7 @@
     private void OpenCreateForm()
     {
         isEditing = false; editingId = null;
-        formName = ""; formCategory = ""; formDescription = ""; formPrice = 0; formIsAvailable = true; formError = null;
+        formName = ""; formCategory = ""; formDescription = ""; formPrice = 0; formIsAvailable = true; formStockQuantity = null; formError = null;
         showForm = true;
     }
 
@@ -238,7 +252,7 @@
         isEditing = true; editingId = item.Id;
         formName = item.Name; formCategory = item.Category;
         formDescription = item.Description ?? "";
-        formPrice = item.BasePrice; formIsAvailable = item.IsAvailable; formError = null;
+        formPrice = item.BasePrice; formIsAvailable = item.IsAvailable; formStockQuantity = item.StockQuantity; formError = null;
         showForm = true;
     }
 
@@ -274,9 +288,9 @@
         {
             var desc = string.IsNullOrWhiteSpace(formDescription) ? null : formDescription.Trim();
             if (isEditing && editingId.HasValue)
-                await Mediator.Send(new UpdateMenuItemCommand { MenuItemId = editingId.Value, Name = formName, Category = formCategory, Description = desc, BasePrice = formPrice, IsAvailable = formIsAvailable });
+                await Mediator.Send(new UpdateMenuItemCommand { MenuItemId = editingId.Value, Name = formName, Category = formCategory, Description = desc, BasePrice = formPrice, IsAvailable = formIsAvailable, StockQuantity = formStockQuantity });
             else
-                await Mediator.Send(new CreateMenuItemCommand { Name = formName, Category = formCategory, Description = desc, BasePrice = formPrice });
+                await Mediator.Send(new CreateMenuItemCommand { Name = formName, Category = formCategory, Description = desc, BasePrice = formPrice, StockQuantity = formStockQuantity });
 
             items = await Mediator.Send(new GetMenuItemsQuery());
             CloseForm();

@@ -25,7 +25,8 @@ public sealed class GetMenuItemsQueryHandler
             Category = m.Category,
             Description = m.Description,
             BasePrice = m.BasePrice.Amount,
-            IsAvailable = m.IsAvailable
+            IsAvailable = m.IsAvailable,
+            StockQuantity = m.StockQuantity
         }).ToList();
     }
 }

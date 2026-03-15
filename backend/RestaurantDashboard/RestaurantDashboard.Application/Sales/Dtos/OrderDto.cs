@@ -9,6 +9,7 @@ public sealed record OrderDto
     public DateTime OpenedAt { get; init; }
     public DateTime? ClosedAt { get; init; }
     public decimal Subtotal { get; init; }
+    public decimal DiscountAmount { get; init; }
     public decimal TipAmount { get; init; }
     public string? PaymentMethod { get; init; }
     public string? Notes { get; init; }

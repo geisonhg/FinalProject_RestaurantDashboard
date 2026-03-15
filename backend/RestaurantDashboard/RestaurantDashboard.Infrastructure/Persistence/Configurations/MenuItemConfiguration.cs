@@ -13,6 +13,7 @@ public sealed class MenuItemConfiguration : IEntityTypeConfiguration<MenuItem>
         builder.Property(m => m.Name).IsRequired().HasMaxLength(200);
         builder.Property(m => m.Category).IsRequired().HasMaxLength(100);
         builder.Property(m => m.IsAvailable).IsRequired().HasDefaultValue(true);
+        builder.Property(m => m.StockQuantity).IsRequired(false);
 
         builder.OwnsOne(m => m.BasePrice, price =>
         {

@@ -8,4 +8,5 @@ public sealed record CloseOrderCommand : IRequest<Guid>
     public Guid OrderId { get; init; }
     public PaymentMethod PaymentMethod { get; init; }
     public decimal TipAmount { get; init; }
+    public decimal DiscountAmount { get; init; }
 }

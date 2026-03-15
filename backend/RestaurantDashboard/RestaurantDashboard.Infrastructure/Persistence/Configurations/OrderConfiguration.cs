@@ -16,6 +16,7 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.OpenedAt).IsRequired();
         builder.Property(o => o.ClosedAt).IsRequired(false);
         builder.Property(o => o.Notes).HasMaxLength(500).IsRequired(false);
+        builder.Property(o => o.DiscountAmount).HasPrecision(10, 2).HasDefaultValue(0m);
 
         builder.HasMany(o => o.Items)
             .WithOne()

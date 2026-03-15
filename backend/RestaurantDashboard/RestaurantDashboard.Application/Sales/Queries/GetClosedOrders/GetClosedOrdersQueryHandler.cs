@@ -55,6 +55,7 @@ public sealed class GetClosedOrdersQueryHandler
                 ClosedAt = o.ClosedAt,
                 Notes = o.Notes,
                 Subtotal = o.Subtotal.Amount,
+                DiscountAmount = o.DiscountAmount,
                 TipAmount = sale?.TipAmount.Amount ?? 0m,
                 PaymentMethod = sale?.PaymentMethod.ToString(),
                 Items = o.Items

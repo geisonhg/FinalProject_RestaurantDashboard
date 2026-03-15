@@ -4,6 +4,9 @@
 @using MediatR
 @using RestaurantDashboard.Application.Sales.Queries.GetSalesSummary
 @using RestaurantDashboard.Application.Sales.Dtos
+@using RestaurantDashboard.Application.Sales.Queries.GetOpenOrders
+@using RestaurantDashboard.Application.Expenses.Queries.GetExpenses
+@using RestaurantDashboard.Application.Expenses.Dtos
 @inject IMediator Mediator
 @inject IJSRuntime JS
 
@@ -73,6 +76,24 @@
                 <div class="kpi__bar"></div>
             </div>
         </div>
+
+        @if (LongOpenOrders.Any() || PendingExpensesCount > 0)
+        {
+            <div class="dash-alerts">
+                @foreach (var lo in LongOpenOrders)
+                {
+                    <div class="dash-alert dash-alert--warn">
+                        ⏱ Table @lo.TableNumber has been open for @((int)(DateTime.UtcNow - lo.OpenedAt).TotalMinutes) min
+                    </div>
+                }
+                @if (PendingExpensesCount > 0)
+                {
+                    <div class="dash-alert dash-alert--info">
+                        📋 @PendingExpensesCount expense(s) pending approval
+                    </div>
+                }
+            </div>
+        }
 
         <div class="dash-grid">
             @if (summary.RevenueByPaymentMethod.Any())
@@ -263,6 +284,11 @@
     .td-blue { color: #60a5fa; font-weight: 600; }
     .method-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; margin-right: 0.5rem; vertical-align: middle; }
 
+    .dash-alerts { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .dash-alert { padding:0.5rem 1rem; border-radius:8px; font-size:0.82rem; font-weight:600; }
+    .dash-alert--warn { background:#451a03; border:1px solid #f59e0b44; color:#fbbf24; }
+    .dash-alert--info { background:#0d2035; border:1px solid #3b82f644; color:#60a5fa; }
+
     .dash-loading { display: flex; align-items: center; gap: 0.5rem; padding: 4rem; justify-content: center; }
     .dash-pulse { width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; animation: pulse 1s ease-in-out infinite; }
     @@keyframes pulse { 0%,100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
@@ -273,6 +299,14 @@
 @code {
     private SalesSummaryDto? summary;
     private SalesSummaryDto? prevSummary;
+    private IReadOnlyList<OrderDto>? openOrders;
+    private IReadOnlyList<ExpenseDto>? pendingExpenses;
+
+    private List<OrderDto> LongOpenOrders =>
+        (openOrders ?? []).Where(o => (DateTime.UtcNow - o.OpenedAt).TotalMinutes >= 45).ToList();
+
+    private int PendingExpensesCount =>
+        (pendingExpenses ?? []).Count(e => !e.IsApproved);
     private bool isLoading = true;
     private string? errorMessage;
     private int preset = 30;
@@ -313,6 +347,8 @@
             await Task.WhenAll(tasks);
             summary = tasks[0].Result;
             prevSummary = tasks[1].Result;
+            try { openOrders = await Mediator.Send(new GetOpenOrdersQuery()); } catch { openOrders = []; }
+            try { pendingExpenses = await Mediator.Send(new GetExpensesQuery { From = DateOnly.FromDateTime(DateTime.Today.AddDays(-30)), To = DateOnly.FromDateTime(DateTime.Today) }); } catch { pendingExpenses = []; }
         }
         catch (Exception ex) { errorMessage = ex.Message; }
         finally { isLoading = false; StateHasChanged(); }

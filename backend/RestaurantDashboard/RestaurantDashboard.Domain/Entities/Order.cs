@@ -17,6 +17,7 @@ public sealed class Order : AggregateRoot
     public DateTime OpenedAt { get; private set; }
     public DateTime? ClosedAt { get; private set; }
     public string? Notes { get; private set; }
+    public decimal DiscountAmount { get; private set; }
 
     public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 
@@ -68,17 +69,22 @@ public sealed class Order : AggregateRoot
         _items.Remove(item);
     }
 
-    public Sale Close(PaymentMethod paymentMethod, decimal tipAmount)
+    public Sale Close(PaymentMethod paymentMethod, decimal tipAmount, decimal discountAmount = 0)
     {
         Guard.AgainstOrderAlreadyClosed(Status);
 
         if (!_items.Any())
             throw new Exceptions.DomainException("Cannot close an order with no items.");
 
+        if (discountAmount < 0) throw new Exceptions.DomainException("Discount cannot be negative.");
+        if (discountAmount > Subtotal.Amount) throw new Exceptions.DomainException("Discount cannot exceed the order subtotal.");
+        DiscountAmount = discountAmount;
+        var discountedSubtotal = discountAmount > 0 ? Money.From(Subtotal.Amount - discountAmount) : Subtotal;
+
         Status = OrderStatus.Closed;
         ClosedAt = DateTime.UtcNow;
 
-        var sale = Sale.Create(Id, Subtotal, TaxRate, tipAmount, paymentMethod, EmployeeId);
+        var sale = Sale.Create(Id, discountedSubtotal, TaxRate, tipAmount, paymentMethod, EmployeeId);
         Raise(new OrderClosedEvent(Id, sale.Id, sale.TotalAmount.Amount));
         return sale;
     }
