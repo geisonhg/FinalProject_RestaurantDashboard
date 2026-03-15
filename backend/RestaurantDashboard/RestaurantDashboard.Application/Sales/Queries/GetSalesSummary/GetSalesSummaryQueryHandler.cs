@@ -18,9 +18,9 @@ public sealed class GetSalesSummaryQueryHandler
         CancellationToken cancellationToken)
     {
         // Sequential — EF Core DbContext is not thread-safe
-        var saleRecords    = await _sales.GetByDateRangeAsync(request.From, request.To, cancellationToken);
-        var totalExpenses  = await _expenses.GetTotalAsync(request.From, request.To, cancellationToken);
-        var topItems       = await _sales.GetTopSellingItemsAsync(request.From, request.To, cancellationToken);
+        var saleRecords = await _sales.GetByDateRangeAsync(request.From, request.To, cancellationToken);
+        var totalExpenses = await _expenses.GetTotalAsync(request.From, request.To, cancellationToken);
+        var topItems = await _sales.GetTopSellingItemsAsync(request.From, request.To, cancellationToken);
         var expenseRecords = await _expenses.GetByDateRangeAsync(request.From, request.To, cancellationToken);
 
         var revenueByPayment = saleRecords

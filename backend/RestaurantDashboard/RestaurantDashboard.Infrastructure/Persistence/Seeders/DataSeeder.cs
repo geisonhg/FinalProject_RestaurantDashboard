@@ -121,10 +121,10 @@ public static class DataSeeder
         };
 
         // Reflection helpers to backdate private-set properties
-        var saleDateProp    = typeof(Sale).GetProperty(nameof(Sale.Date))!;
+        var saleDateProp = typeof(Sale).GetProperty(nameof(Sale.Date))!;
         var orderOpenedProp = typeof(Order).GetProperty(nameof(Order.OpenedAt))!;
         var orderClosedProp = typeof(Order).GetProperty(nameof(Order.ClosedAt))!;
-        var tipDateProp     = typeof(Tip).GetProperty(nameof(Tip.Date))!;
+        var tipDateProp = typeof(Tip).GetProperty(nameof(Tip.Date))!;
 
         var managerEmployeeId = employeeIds[0];
 
