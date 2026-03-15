@@ -10,11 +10,16 @@ public sealed class GetClosedOrdersQueryHandler
 {
     private readonly IOrderRepository _orders;
     private readonly IEmployeeRepository _employees;
+    private readonly ISaleRepository _sales;
 
-    public GetClosedOrdersQueryHandler(IOrderRepository orders, IEmployeeRepository employees)
+    public GetClosedOrdersQueryHandler(
+        IOrderRepository orders,
+        IEmployeeRepository employees,
+        ISaleRepository sales)
     {
         _orders = orders;
         _employees = employees;
+        _sales = sales;
     }
 
     public async Task<IReadOnlyList<OrderDto>> Handle(
@@ -34,25 +39,36 @@ public sealed class GetClosedOrdersQueryHandler
         var allEmployees = await _employees.GetAllActiveAsync(cancellationToken);
         var employeeMap = allEmployees.ToDictionary(e => e.Id, e => e.FullName);
 
-        return filtered.Select(o => new OrderDto
+        var salesInRange = await _sales.GetByDateRangeAsync(request.From, request.To, cancellationToken);
+        var saleByOrder = salesInRange.ToDictionary(s => s.OrderId);
+
+        return filtered.Select(o =>
         {
-            Id = o.Id,
-            TableNumber = o.TableNumber,
-            EmployeeName = employeeMap.TryGetValue(o.EmployeeId, out var name) ? name : "Unknown",
-            Status = o.Status.ToString(),
-            OpenedAt = o.OpenedAt,
-            ClosedAt = o.ClosedAt,
-            Notes = o.Notes,
-            Subtotal = o.Subtotal.Amount,
-            Items = o.Items.Select(i => new OrderItemDto
+            saleByOrder.TryGetValue(o.Id, out var sale);
+            return new OrderDto
             {
-                Id = i.Id,
-                MenuItemId = i.MenuItemId,
-                MenuItemName = i.MenuItemName,
-                Quantity = i.Quantity,
-                UnitPrice = i.UnitPrice.Amount,
-                LineTotal = i.LineTotal.Amount
-            }).ToList()
+                Id = o.Id,
+                TableNumber = o.TableNumber,
+                EmployeeName = employeeMap.TryGetValue(o.EmployeeId, out var name) ? name : "Unknown",
+                Status = o.Status.ToString(),
+                OpenedAt = o.OpenedAt,
+                ClosedAt = o.ClosedAt,
+                Notes = o.Notes,
+                Subtotal = o.Subtotal.Amount,
+                TipAmount = sale?.TipAmount.Amount ?? 0m,
+                PaymentMethod = sale?.PaymentMethod.ToString(),
+                Items = o.Items
+                    .Select(i => new OrderItemDto
+                    {
+                        Id = i.Id,
+                        MenuItemId = i.MenuItemId,
+                        MenuItemName = i.MenuItemName,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice.Amount,
+                        LineTotal = i.LineTotal.Amount
+                    })
+                    .ToList()
+            };
         }).ToList();
     }
 }

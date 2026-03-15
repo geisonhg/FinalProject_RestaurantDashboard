@@ -8,6 +8,9 @@ public sealed class RecordExpenseCommandValidator : AbstractValidator<RecordExpe
     {
         RuleFor(x => x.Description).NotEmpty().MaximumLength(500);
         RuleFor(x => x.Amount).GreaterThan(0).WithMessage("Amount must be greater than zero.");
+        RuleFor(x => x.Date)
+            .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today))
+            .WithMessage("Expense date cannot be in the future.");
         RuleFor(x => x.RecordedByEmployeeId).NotEmpty();
     }
 }

@@ -52,6 +52,10 @@
                 <span class="sh-summary-value">@(orders.Count > 0 ? (orders.Sum(o => o.Subtotal) / orders.Count).ToString("C") : "€0.00")</span>
             </div>
             <div class="sh-summary-card">
+                <span class="sh-summary-label">Tips</span>
+                <span class="sh-summary-value sh-summary-value--green">@orders.Sum(o => o.TipAmount).ToString("C")</span>
+            </div>
+            <div class="sh-summary-card">
                 <span class="sh-summary-label">Items Sold</span>
                 <span class="sh-summary-value">@orders.Sum(o => o.Items.Sum(i => i.Quantity))</span>
             </div>
@@ -67,6 +71,8 @@
                             <th>Table</th>
                             <th>Employee</th>
                             <th>Items</th>
+                            <th>Payment</th>
+                            <th>Tip</th>
                             <th>Total</th>
                             <th></th>
                         </tr>
@@ -79,6 +85,8 @@
                                 <td><span class="sh-table-badge">Table @order.TableNumber</span></td>
                                 <td class="sh-cell-emp">@order.EmployeeName</td>
                                 <td class="sh-cell-count">@order.Items.Count item(s)</td>
+                                <td><span class="sh-table-badge">@(order.PaymentMethod ?? "—")</span></td>
+                                <td class="sh-cell-tip">@(order.TipAmount > 0 ? order.TipAmount.ToString("C") : "—")</td>
                                 <td class="sh-cell-total">@order.Subtotal.ToString("C")</td>
                                 <td>
                                     <button class="sh-expand-btn" @onclick="() => ToggleExpand(order.Id)">
@@ -89,7 +97,7 @@
                             @if (expandedOrderId == order.Id)
                             {
                                 <tr class="sh-detail-row">
-                                    <td colspan="6">
+                                    <td colspan="8">
                                         <div class="sh-detail">
                                             <table class="sh-detail-table">
                                                 <thead>
@@ -190,6 +198,7 @@
     .sh-cell-emp { color: #cbd5e1; }
     .sh-cell-count { color: #64748b; font-size: 0.85rem; }
     .sh-cell-total { color: #10b981; font-weight: 700; font-size: 1rem; }
+    .sh-cell-tip { color: #f59e0b; font-weight: 600; }
     .sh-table-badge { background: #0f1117; border: 1px solid #2d3748; color: #94a3b8; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 20px; white-space: nowrap; }
 
     .sh-expand-btn { background: none; border: 1px solid #2d3748; color: #64748b; padding: 0.3rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; transition: all 0.15s; white-space: nowrap; }

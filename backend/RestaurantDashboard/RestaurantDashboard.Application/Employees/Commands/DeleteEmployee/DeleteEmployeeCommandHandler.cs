@@ -21,7 +21,8 @@ public sealed class DeleteEmployeeCommandHandler : IRequestHandler<DeleteEmploye
         var employee = await _employees.GetByIdAsync(request.EmployeeId, cancellationToken)
             ?? throw new NotFoundException(nameof(Employee), request.EmployeeId);
 
-        _employees.Remove(employee);
+        employee.Deactivate();
+        _employees.Update(employee);
         await _uow.CommitAsync(cancellationToken);
     }
 }

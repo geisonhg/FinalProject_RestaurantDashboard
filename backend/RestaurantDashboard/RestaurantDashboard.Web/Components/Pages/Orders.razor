@@ -258,6 +258,16 @@
                 </div>
 
                 <label class="ord-label">Tip (€)</label>
+                <div class="ord-tip-suggestions">
+                    @foreach (var pct in new[] { 10, 15, 20 })
+                    {
+                        var tip = Math.Round(selectedOrder.Subtotal * pct / 100, 2);
+                        <button class="ord-tip-btn @(formTipAmount == tip ? "ord-tip-btn--active" : "")"
+                            type="button" @onclick="() => formTipAmount = tip">
+                            @pct% (@tip.ToString("C"))
+                        </button>
+                    }
+                </div>
                 <input class="ord-input" type="number" min="0" step="0.01" @bind="formTipAmount" />
 
                 <div class="ord-close-summary">
@@ -368,6 +378,11 @@
     .ord-payment-btn { background: #0f1117; border: 1px solid #2d3748; color: #64748b; padding: 0.65rem 0.5rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; text-align: center; }
     .ord-payment-btn:hover { border-color: #3b82f6; color: #93c5fd; }
     .ord-payment-btn--active { background: #1d3461; border-color: #3b82f6; color: #60a5fa; font-weight: 700; }
+
+    .ord-tip-suggestions { display: flex; gap: 0.4rem; }
+    .ord-tip-btn { flex: 1; background: #0f1117; border: 1px solid #2d3748; color: #64748b; padding: 0.5rem 0.25rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.15s; text-align: center; }
+    .ord-tip-btn:hover { border-color: #f59e0b; color: #fbbf24; }
+    .ord-tip-btn--active { background: #451a03; border-color: #f59e0b; color: #fbbf24; font-weight: 700; }
 
     .ord-close-summary { display: grid; grid-template-columns: 1fr auto; gap: 0.4rem 1rem; background: #0f1117; border: 1px solid #1e2433; border-radius: 8px; padding: 0.85rem 1rem; font-size: 0.88rem; color: #64748b; align-items: center; }
     .ord-close-total { color: #f8fafc; font-weight: 700; font-size: 1rem; }
