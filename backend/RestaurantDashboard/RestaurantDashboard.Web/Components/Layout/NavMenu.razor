@@ -69,22 +69,18 @@
         <Authorized>
             <div class="sidenav-section sidenav-section--bottom">
                 <span class="sidenav-section-label">Account</span>
-                <NavLink class="sidenav-link" href="/Account/Manage">
+                <a class="sidenav-link" href="/Account/Manage" data-enhance-nav="false">
                     <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
                     </svg>
                     @context.User.Identity?.Name
-                </NavLink>
-                <form action="/Account/Logout" method="post">
-                    <AntiforgeryToken />
-                    <input type="hidden" name="ReturnUrl" value="/Account/Login" />
-                    <button type="submit" class="sidenav-link sidenav-logout">
-                        <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                            <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
-                        </svg>
-                        Log Out
-                    </button>
-                </form>
+                </a>
+                <a class="sidenav-link sidenav-logout" href="/Account/Logout" data-enhance-nav="false">
+                    <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
+                    </svg>
+                    Log Out
+                </a>
             </div>
         </Authorized>
         <NotAuthorized>

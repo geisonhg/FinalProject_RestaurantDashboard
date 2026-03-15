@@ -53,6 +53,7 @@ else
 // Blazor Identity UI services (wires up IdentityRedirectManager, etc.)
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 builder.Services.AddScoped<IdentityRedirectManager>();
+builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<AuthenticationStateProvider,
     IdentityRevalidatingAuthenticationStateProvider>();
 
