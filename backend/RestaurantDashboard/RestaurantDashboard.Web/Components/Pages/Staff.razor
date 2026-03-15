@@ -1,10 +1,12 @@
 @page "/staff"
 @attribute [Authorize(Policy = "ManagerPlus")]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using MediatR
 @using RestaurantDashboard.Application.Employees.Commands.ClockIn
 @using RestaurantDashboard.Application.Employees.Commands.ClockOut
 @using RestaurantDashboard.Application.Employees.Commands.CreateEmployee
 @using RestaurantDashboard.Application.Employees.Commands.UpdateEmployee
+@using RestaurantDashboard.Application.Employees.Commands.DeleteEmployee
 @using RestaurantDashboard.Application.Employees.Dtos
 @using RestaurantDashboard.Application.Employees.Queries.GetAllEmployees
 @using RestaurantDashboard.Application.Employees.Queries.GetEmployeePerformance
@@ -92,7 +94,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var emp in employees)
+                    @foreach (var emp in employees.Skip((_stPage - 1) * StPageSize).Take(StPageSize))
                     {
                         <tr>
                             <td class="st-name">@emp.FullName</td>
@@ -124,12 +126,27 @@
                                     </button>
                                 }
                                 <button class="st-btn st-btn--edit" @onclick="() => OpenEditForm(emp)">Editar</button>
+                                <button class="st-btn st-btn--delete" @onclick="() => ConfirmDeleteEmployee(emp)">🗑️</button>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
+        @if (StTotalPages > 1)
+        {
+            <div class="st-pagination">
+                <button class="st-page-btn" disabled="@(_stPage == 1)" @onclick="() => _stPage--">‹</button>
+                @for (int p = 1; p <= StTotalPages; p++)
+                {
+                    var pNum = p;
+                    <button class="st-page-btn @(_stPage == pNum ? "st-page-btn--active" : "")"
+                            @onclick="() => _stPage = pNum">@pNum</button>
+                }
+                <button class="st-page-btn" disabled="@(_stPage == StTotalPages)" @onclick="() => _stPage++">›</button>
+                <span class="st-page-info">@((_stPage - 1) * StPageSize + 1)–@(Math.Min(_stPage * StPageSize, employees.Count)) de @employees.Count</span>
+            </div>
+        }
     }
 
     @if (actionError is not null)
@@ -137,6 +154,27 @@
         <div class="st-action-error">@actionError</div>
     }
 </div>
+
+@* ── Delete Confirmation Modal ── *@
+@if (showDeleteConfirm && employeeToDelete is not null)
+{
+    <div class="st-modal-backdrop" @onclick="CancelDeleteEmployee">
+        <div class="st-modal" @onclick:stopPropagation>
+            <h2 class="st-modal__title">Eliminar empleado</h2>
+            <p class="st-modal__sub">¿Estás seguro que querés eliminar a <strong>@employeeToDelete.FullName</strong>? Esta acción no se puede deshacer.</p>
+            @if (deleteError is not null)
+            {
+                <div class="st-form-error">@deleteError</div>
+            }
+            <div class="st-form-actions">
+                <button class="st-btn st-btn--cancel" @onclick="CancelDeleteEmployee">Cancelar</button>
+                <button class="st-btn st-btn--delete-confirm" @onclick="ExecuteDeleteEmployee" disabled="@isDeleting">
+                    @(isDeleting ? "Eliminando..." : "Sí, eliminar")
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 @* ── Create / Edit Employee Modal ── *@
 @if (showForm)
@@ -250,6 +288,10 @@
     .st-btn--clockout:hover:not(:disabled) { background: #92400e; }
     .st-btn--edit { background: #1e2433; border: 1px solid #2d3748; color: #94a3b8; }
     .st-btn--edit:hover { border-color: #3b82f6; color: #3b82f6; }
+    .st-btn--delete { background: #1e2433; border: 1px solid #2d3748; color: #64748b; }
+    .st-btn--delete:hover { border-color: #ef4444; color: #ef4444; }
+    .st-btn--delete-confirm { background: #ef4444; color: white; }
+    .st-btn--delete-confirm:hover:not(:disabled) { background: #dc2626; }
     .st-btn--save { background: #10b981; color: white; }
     .st-btn--save:hover:not(:disabled) { background: #059669; }
     .st-btn--cancel { background: #1e2433; border: 1px solid #2d3748; color: #94a3b8; }
@@ -272,6 +314,12 @@
     @@keyframes st-spin { to { transform: rotate(360deg); } }
     .st-empty { text-align: center; padding: 3rem; color: #64748b; }
     .st-action-error { background: #2d1515; border: 1px solid #ef4444; color: #fca5a5; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-top: 1rem; }
+    .st-pagination { display: flex; align-items: center; gap: 0.35rem; padding: 1rem 0 0; flex-wrap: wrap; }
+    .st-page-btn { background: #1e2433; border: 1px solid #2d3748; color: #94a3b8; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .st-page-btn:hover:not(:disabled) { border-color: #3b82f6; color: #3b82f6; }
+    .st-page-btn--active { background: #3b82f6; border-color: #3b82f6; color: white; }
+    .st-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .st-page-info { margin-left: 0.5rem; font-size: 0.78rem; color: #475569; }
 
     .st-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; }
     .st-modal { background: #1e2433; border: 1px solid #2d3748; border-radius: 16px; padding: 2rem; width: 100%; max-width: 420px; }
@@ -284,6 +332,10 @@
 </style>
 
 @code {
+    private const int StPageSize = 10;
+    private int _stPage = 1;
+    private int StTotalPages => employees is null ? 1 : (int)Math.Ceiling(employees.Count / (double)StPageSize);
+
     private IReadOnlyList<EmployeeDto>? employees;
     private IReadOnlyList<EmployeePerformanceDto>? performance;
     private bool isLoading = true;
@@ -306,6 +358,12 @@
     private bool formIsActive = true;
     private string? formError;
 
+    // Delete state
+    private bool showDeleteConfirm = false;
+    private bool isDeleting = false;
+    private EmployeeDto? employeeToDelete;
+    private string? deleteError;
+
     // Clock out modal
     private bool showClockOutModal = false;
     private EmployeeDto? clockOutEmployee;
@@ -320,6 +378,7 @@
     private async Task LoadEmployees()
     {
         isLoading = true;
+        _stPage = 1;
         try { employees = await Mediator.Send(new GetAllEmployeesQuery()); }
         catch { employees = []; }
         finally { isLoading = false; }
@@ -407,6 +466,24 @@
     }
 
     private void CloseForm() { showForm = false; formError = null; }
+
+    private void ConfirmDeleteEmployee(EmployeeDto emp) { employeeToDelete = emp; deleteError = null; showDeleteConfirm = true; }
+    private void CancelDeleteEmployee() { showDeleteConfirm = false; employeeToDelete = null; deleteError = null; }
+
+    private async Task ExecuteDeleteEmployee()
+    {
+        if (employeeToDelete is null) return;
+        isDeleting = true;
+        deleteError = null;
+        try
+        {
+            await Mediator.Send(new DeleteEmployeeCommand(employeeToDelete.Id));
+            await LoadEmployees();
+            CancelDeleteEmployee();
+        }
+        catch (Exception ex) { deleteError = $"Error: {ex.Message}"; }
+        finally { isDeleting = false; }
+    }
 
     private async Task SaveEmployee()
     {

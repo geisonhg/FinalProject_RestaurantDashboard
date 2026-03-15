@@ -11,4 +11,5 @@ public interface IEmployeeRepository
     Task<IReadOnlyList<Employee>> GetAllActiveWithShiftsAsync(CancellationToken ct = default);
     Task AddAsync(Employee employee, CancellationToken ct = default);
     void Update(Employee employee);
+    void Remove(Employee employee);
 }

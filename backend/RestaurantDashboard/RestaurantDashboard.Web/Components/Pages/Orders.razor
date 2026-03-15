@@ -1,5 +1,6 @@
 @page "/orders"
 @attribute [Authorize(Policy = "AllStaff")]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @implements IDisposable
 @using MediatR
 @using RestaurantDashboard.Application.Employees.Dtos

@@ -17,7 +17,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Blazor Server
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents(options =>
+    {
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
+    });
 
 // Detect if a real Postgres connection is configured
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
@@ -56,7 +59,11 @@ builder.Services.AddScoped<AuthenticationStateProvider,
 builder.Services.AddApplication();
 
 // SignalR + real-time order notifications
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+});
 builder.Services.AddSingleton<OrderNotifier>();
 
 // Register MediatR notification handlers defined in the Web assembly

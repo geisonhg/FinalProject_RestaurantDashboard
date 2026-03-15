@@ -1,9 +1,11 @@
 @page "/menu"
 @attribute [Authorize(Policy = "ManagerPlus")]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using MediatR
 @using RestaurantDashboard.Application.MenuItems.Queries.GetMenuItems
 @using RestaurantDashboard.Application.MenuItems.Commands.CreateMenuItem
 @using RestaurantDashboard.Application.MenuItems.Commands.UpdateMenuItem
+@using RestaurantDashboard.Application.MenuItems.Commands.DeleteMenuItem
 @using RestaurantDashboard.Application.MenuItems.Dtos
 @inject IMediator Mediator
 
@@ -51,7 +53,10 @@
                     </div>
                     <div class="mn-item__name">@item.Name</div>
                     <div class="mn-item__price">@item.BasePrice.ToString("C")</div>
-                    <button class="mn-btn mn-btn--edit" @onclick="() => OpenEditForm(item)">✏️ Editar</button>
+                    <div class="mn-item__actions">
+                        <button class="mn-btn mn-btn--edit" @onclick="() => OpenEditForm(item)">✏️ Editar</button>
+                        <button class="mn-btn mn-btn--delete" @onclick="() => ConfirmDelete(item)">🗑️</button>
+                    </div>
                 </div>
             }
         </div>
@@ -60,6 +65,26 @@
         {
             <div class="mn-empty">No se encontraron productos con los filtros aplicados.</div>
         }
+    }
+
+    @if (showDeleteConfirm && itemToDelete is not null)
+    {
+        <div class="mn-modal-backdrop" @onclick="CancelDelete">
+            <div class="mn-modal mn-modal--sm" @onclick:stopPropagation>
+                <h2 class="mn-modal__title">Eliminar producto</h2>
+                <p class="mn-delete-msg">¿Estás seguro que querés eliminar <strong>@itemToDelete.Name</strong>? Esta acción no se puede deshacer.</p>
+                @if (deleteError is not null)
+                {
+                    <div class="mn-form-error">@deleteError</div>
+                }
+                <div class="mn-form-actions">
+                    <button class="mn-btn mn-btn--cancel" @onclick="CancelDelete">Cancelar</button>
+                    <button class="mn-btn mn-btn--delete-confirm" @onclick="ExecuteDelete" disabled="@isDeleting">
+                        @(isDeleting ? "Eliminando..." : "Sí, eliminar")
+                    </button>
+                </div>
+            </div>
+        </div>
     }
 
     @if (showForm)
@@ -111,8 +136,15 @@
     .mn-btn { padding: 0.6rem 1.25rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
     .mn-btn--add { background: #3b82f6; color: white; }
     .mn-btn--add:hover { background: #2563eb; }
-    .mn-btn--edit { background: #1e2433; border: 1px solid #2d3748; color: #94a3b8; font-size: 0.8rem; padding: 0.4rem 0.9rem; width: 100%; margin-top: 0.75rem; }
+    .mn-item__actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .mn-btn--edit { background: #1e2433; border: 1px solid #2d3748; color: #94a3b8; font-size: 0.8rem; padding: 0.4rem 0.9rem; flex: 1; }
     .mn-btn--edit:hover { border-color: #3b82f6; color: #3b82f6; }
+    .mn-btn--delete { background: #1e2433; border: 1px solid #2d3748; color: #64748b; font-size: 0.8rem; padding: 0.4rem 0.6rem; }
+    .mn-btn--delete:hover { border-color: #ef4444; color: #ef4444; }
+    .mn-btn--delete-confirm { background: #ef4444; color: white; }
+    .mn-btn--delete-confirm:hover:not(:disabled) { background: #dc2626; }
+    .mn-modal--sm { max-width: 380px; }
+    .mn-delete-msg { color: #94a3b8; font-size: 0.9rem; margin: 0 0 1.25rem; line-height: 1.5; }
     .mn-btn--save { background: #10b981; color: white; }
     .mn-btn--save:hover:not(:disabled) { background: #059669; }
     .mn-btn--cancel { background: #1e2433; border: 1px solid #2d3748; color: #94a3b8; }
@@ -150,6 +182,12 @@
     private string searchTerm = "";
     private string selectedCategory = "";
     private bool showOnlyAvailable = false;
+
+    // Delete state
+    private bool showDeleteConfirm = false;
+    private bool isDeleting = false;
+    private MenuItemDto? itemToDelete;
+    private string? deleteError;
 
     // Form state
     private bool showForm = false;
@@ -194,6 +232,24 @@
     }
 
     private void CloseForm() { showForm = false; formError = null; }
+
+    private void ConfirmDelete(MenuItemDto item) { itemToDelete = item; deleteError = null; showDeleteConfirm = true; }
+    private void CancelDelete() { showDeleteConfirm = false; itemToDelete = null; deleteError = null; }
+
+    private async Task ExecuteDelete()
+    {
+        if (itemToDelete is null) return;
+        isDeleting = true;
+        deleteError = null;
+        try
+        {
+            await Mediator.Send(new DeleteMenuItemCommand(itemToDelete.Id));
+            items = await Mediator.Send(new GetMenuItemsQuery());
+            CancelDelete();
+        }
+        catch (Exception ex) { deleteError = $"Error: {ex.Message}"; }
+        finally { isDeleting = false; }
+    }
 
     private async Task SaveItem()
     {

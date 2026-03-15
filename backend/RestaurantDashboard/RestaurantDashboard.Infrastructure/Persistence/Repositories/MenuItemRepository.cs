@@ -32,4 +32,7 @@ public sealed class MenuItemRepository : IMenuItemRepository
 
     public void Update(MenuItem menuItem) =>
         _context.MenuItems.Update(menuItem);
+
+    public void Remove(MenuItem menuItem) =>
+        _context.MenuItems.Remove(menuItem);
 }

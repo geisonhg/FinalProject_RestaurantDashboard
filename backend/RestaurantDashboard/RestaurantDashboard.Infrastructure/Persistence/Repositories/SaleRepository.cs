@@ -36,4 +36,18 @@ public sealed class SaleRepository : ISaleRepository
 
     public async Task AddAsync(Sale sale, CancellationToken ct) =>
         await _context.Sales.AddAsync(sale, ct);
+
+    public async Task<Dictionary<string, decimal>> GetTopSellingItemsAsync(DateOnly from, DateOnly to, CancellationToken ct) =>
+        await _context.Sales
+            .Where(s => s.Date >= from && s.Date <= to)
+            .Join(_context.OrderItems,
+                sale => sale.OrderId,
+                item => item.OrderId,
+                (sale, item) => item)
+            .GroupBy(i => i.MenuItemName)
+            .Select(g => new { Name = g.Key, Revenue = g.Sum(i => i.UnitPrice.Amount * i.Quantity) })
+            .OrderByDescending(x => x.Revenue)
+            .Take(10)
+            .AsNoTracking()
+            .ToDictionaryAsync(x => x.Name, x => x.Revenue, ct);
 }
