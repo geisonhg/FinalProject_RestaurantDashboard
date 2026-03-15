@@ -1,0 +1,258 @@
+@page "/sales-history"
+@attribute [Authorize(Policy = "ManagerPlus")]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using MediatR
+@using RestaurantDashboard.Application.Sales.Queries.GetClosedOrders
+@using RestaurantDashboard.Application.Sales.Dtos
+@inject IMediator Mediator
+
+<PageTitle>Sales History</PageTitle>
+
+<div class="sh-page">
+    <div class="sh-header">
+        <div>
+            <h1 class="sh-title">Sales History</h1>
+            <p class="sh-subtitle">Closed orders and transaction detail</p>
+        </div>
+    </div>
+
+    <div class="sh-filters">
+        <div class="sh-filter-group">
+            <label class="sh-label">From</label>
+            <input class="sh-input" type="date" @bind="filterFrom" />
+        </div>
+        <div class="sh-filter-group">
+            <label class="sh-label">To</label>
+            <input class="sh-input" type="date" @bind="filterTo" />
+        </div>
+        <button class="sh-btn sh-btn--search" @onclick="Search">🔍 Search</button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="sh-loading">
+            <div class="sh-spinner"></div>
+            <span>Loading orders...</span>
+        </div>
+    }
+    else if (orders is not null)
+    {
+        @* Summary bar *@
+        <div class="sh-summary">
+            <div class="sh-summary-card">
+                <span class="sh-summary-label">Orders</span>
+                <span class="sh-summary-value">@orders.Count</span>
+            </div>
+            <div class="sh-summary-card">
+                <span class="sh-summary-label">Revenue</span>
+                <span class="sh-summary-value sh-summary-value--green">@orders.Sum(o => o.Subtotal).ToString("C")</span>
+            </div>
+            <div class="sh-summary-card">
+                <span class="sh-summary-label">Avg. Ticket</span>
+                <span class="sh-summary-value">@(orders.Count > 0 ? (orders.Sum(o => o.Subtotal) / orders.Count).ToString("C") : "€0.00")</span>
+            </div>
+            <div class="sh-summary-card">
+                <span class="sh-summary-label">Items Sold</span>
+                <span class="sh-summary-value">@orders.Sum(o => o.Items.Sum(i => i.Quantity))</span>
+            </div>
+        </div>
+
+        @if (orders.Any())
+        {
+            <div class="sh-table-wrap">
+                <table class="sh-table">
+                    <thead>
+                        <tr>
+                            <th>Closed At</th>
+                            <th>Table</th>
+                            <th>Employee</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in PagedOrders)
+                        {
+                            <tr class="@(expandedOrderId == order.Id ? "sh-row--expanded" : "")">
+                                <td class="sh-cell-date">@order.ClosedAt?.ToString("dd MMM yyyy HH:mm")</td>
+                                <td><span class="sh-table-badge">Table @order.TableNumber</span></td>
+                                <td class="sh-cell-emp">@order.EmployeeName</td>
+                                <td class="sh-cell-count">@order.Items.Count item(s)</td>
+                                <td class="sh-cell-total">@order.Subtotal.ToString("C")</td>
+                                <td>
+                                    <button class="sh-expand-btn" @onclick="() => ToggleExpand(order.Id)">
+                                        @(expandedOrderId == order.Id ? "▲ Hide" : "▼ Details")
+                                    </button>
+                                </td>
+                            </tr>
+                            @if (expandedOrderId == order.Id)
+                            {
+                                <tr class="sh-detail-row">
+                                    <td colspan="6">
+                                        <div class="sh-detail">
+                                            <table class="sh-detail-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Item</th>
+                                                        <th>Qty</th>
+                                                        <th>Unit Price</th>
+                                                        <th>Line Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in order.Items)
+                                                    {
+                                                        <tr>
+                                                            <td>@item.MenuItemName</td>
+                                                            <td>@item.Quantity</td>
+                                                            <td>@item.UnitPrice.ToString("C")</td>
+                                                            <td class="sh-detail-total">@item.LineTotal.ToString("C")</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <td colspan="3" class="sh-detail-subtotal-label">Subtotal</td>
+                                                        <td class="sh-detail-total">@order.Subtotal.ToString("C")</td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                            @if (!string.IsNullOrEmpty(order.Notes))
+                                            {
+                                                <p class="sh-detail-notes">📝 @order.Notes</p>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* Pagination *@
+            @if (TotalPages > 1)
+            {
+                <div class="sh-pagination">
+                    <button class="sh-page-btn" @onclick="() => _page--" disabled="@(_page == 1)">‹</button>
+                    @for (var p = 1; p <= TotalPages; p++)
+                    {
+                        var pg = p;
+                        <button class="sh-page-btn @(_page == pg ? "sh-page-btn--active" : "")" @onclick="() => _page = pg">@pg</button>
+                    }
+                    <button class="sh-page-btn" @onclick="() => _page++" disabled="@(_page == TotalPages)">›</button>
+                    <span class="sh-page-info">Page @_page of @TotalPages</span>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="sh-empty">
+                <span>🧾</span>
+                <p>No closed orders found for the selected period.</p>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .sh-page { padding: 2rem; background: #0f1117; min-height: 100vh; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; }
+    .sh-header { margin-bottom: 1.5rem; }
+    .sh-title { font-size: 2rem; font-weight: 700; color: #f8fafc; margin: 0; }
+    .sh-subtitle { color: #64748b; margin: 0.25rem 0 0; }
+
+    .sh-filters { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .sh-filter-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .sh-label { font-size: 0.78rem; color: #64748b; font-weight: 500; }
+    .sh-input { background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; padding: 0.55rem 0.9rem; border-radius: 8px; font-size: 0.9rem; }
+    .sh-input:focus { outline: none; border-color: #3b82f6; }
+
+    .sh-btn { padding: 0.6rem 1.25rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
+    .sh-btn--search { background: #3b82f6; color: white; align-self: flex-end; }
+    .sh-btn--search:hover { background: #2563eb; }
+
+    .sh-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .sh-summary-card { background: #1e2433; border: 1px solid #2d3748; border-radius: 12px; padding: 1rem 1.25rem; }
+    .sh-summary-label { display: block; font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.35rem; }
+    .sh-summary-value { font-size: 1.5rem; font-weight: 700; color: #f8fafc; }
+    .sh-summary-value--green { color: #10b981; }
+
+    .sh-table-wrap { overflow-x: auto; background: #1e2433; border: 1px solid #2d3748; border-radius: 14px; }
+    .sh-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .sh-table thead th { text-align: left; padding: 0.75rem 1rem; color: #475569; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid #2d3748; }
+    .sh-table tbody td { padding: 0.85rem 1rem; border-bottom: 1px solid #1a2030; color: #94a3b8; }
+    .sh-table tbody tr:last-child td { border-bottom: none; }
+    .sh-table tbody tr:hover td { background: #0f1320; }
+    .sh-row--expanded td { background: #1a2540 !important; }
+
+    .sh-cell-date { color: #e2e8f0; font-size: 0.85rem; white-space: nowrap; }
+    .sh-cell-emp { color: #cbd5e1; }
+    .sh-cell-count { color: #64748b; font-size: 0.85rem; }
+    .sh-cell-total { color: #10b981; font-weight: 700; font-size: 1rem; }
+    .sh-table-badge { background: #0f1117; border: 1px solid #2d3748; color: #94a3b8; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 20px; white-space: nowrap; }
+
+    .sh-expand-btn { background: none; border: 1px solid #2d3748; color: #64748b; padding: 0.3rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; transition: all 0.15s; white-space: nowrap; }
+    .sh-expand-btn:hover { border-color: #3b82f6; color: #60a5fa; }
+
+    .sh-detail-row td { padding: 0; border-bottom: 1px solid #2d3748; }
+    .sh-detail { padding: 1rem 1.5rem 1.25rem; background: #0f1320; }
+    .sh-detail-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .sh-detail-table th { text-align: left; padding: 0.4rem 0.75rem; color: #334155; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid #1e2433; }
+    .sh-detail-table td { padding: 0.5rem 0.75rem; color: #94a3b8; border-bottom: 1px solid #131720; }
+    .sh-detail-table tfoot td { border-top: 1px solid #2d3748; border-bottom: none; font-weight: 700; }
+    .sh-detail-total { color: #10b981; font-weight: 600; text-align: right; }
+    .sh-detail-subtotal-label { text-align: right; color: #475569; }
+    .sh-detail-notes { margin-top: 0.75rem; font-size: 0.82rem; color: #475569; }
+
+    .sh-loading { display: flex; align-items: center; gap: 1rem; padding: 3rem; color: #64748b; }
+    .sh-spinner { width: 28px; height: 28px; border: 3px solid #2d3748; border-top-color: #3b82f6; border-radius: 50%; animation: shSpin 0.8s linear infinite; }
+    @@keyframes shSpin { to { transform: rotate(360deg); } }
+    .sh-empty { text-align: center; padding: 4rem; color: #64748b; }
+    .sh-empty span { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+
+    .sh-pagination { display: flex; align-items: center; gap: 0.4rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .sh-page-btn { background: #1e2433; border: 1px solid #2d3748; color: #64748b; padding: 0.4rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.15s; }
+    .sh-page-btn:hover:not(:disabled) { border-color: #3b82f6; color: #60a5fa; }
+    .sh-page-btn--active { background: #1d3461; border-color: #3b82f6; color: #60a5fa; }
+    .sh-page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .sh-page-info { font-size: 0.8rem; color: #475569; margin-left: 0.5rem; }
+</style>
+
+@code {
+    private IReadOnlyList<OrderDto>? orders;
+    private bool isLoading = false;
+
+    private DateOnly filterFrom = DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
+    private DateOnly filterTo   = DateOnly.FromDateTime(DateTime.Today);
+
+    private Guid? expandedOrderId;
+
+    private const int PageSize = 15;
+    private int _page = 1;
+
+    private int TotalPages => orders is null || orders.Count == 0
+        ? 1
+        : (int)Math.Ceiling(orders.Count / (double)PageSize);
+
+    private IEnumerable<OrderDto> PagedOrders =>
+        (orders ?? []).Skip((_page - 1) * PageSize).Take(PageSize);
+
+    protected override async Task OnInitializedAsync() => await Search();
+
+    private async Task Search()
+    {
+        isLoading = true;
+        _page = 1;
+        expandedOrderId = null;
+        try
+        {
+            orders = await Mediator.Send(new GetClosedOrdersQuery { From = filterFrom, To = filterTo });
+        }
+        catch { orders = []; }
+        finally { isLoading = false; }
+    }
+
+    private void ToggleExpand(Guid orderId) =>
+        expandedOrderId = expandedOrderId == orderId ? null : orderId;
+}

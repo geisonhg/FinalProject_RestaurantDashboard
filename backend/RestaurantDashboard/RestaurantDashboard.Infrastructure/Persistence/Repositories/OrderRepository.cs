@@ -29,9 +29,10 @@ public sealed class OrderRepository : IOrderRepository
 
     public async Task<IReadOnlyList<Order>> GetByStatusAsync(OrderStatus status, CancellationToken ct) =>
         await _context.Orders
+            .Include(o => o.Items)
             .AsNoTracking()
             .Where(o => o.Status == status)
-            .OrderByDescending(o => o.OpenedAt)
+            .OrderByDescending(o => o.ClosedAt)
             .ToListAsync(ct);
 
     public async Task<IReadOnlyList<Order>> GetByEmployeeAsync(Guid employeeId, DateOnly date, CancellationToken ct) =>

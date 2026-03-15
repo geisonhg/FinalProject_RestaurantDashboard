@@ -43,6 +43,15 @@
                 Staff
             </NavLink>
         </AuthorizeView>
+        <AuthorizeView Policy="ManagerPlus">
+            <NavLink class="sidenav-link" href="/sales-history">
+                <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Sales History
+            </NavLink>
+        </AuthorizeView>
         <AuthorizeView Policy="CanGenerateReports">
             <NavLink class="sidenav-link" href="/reports">
                 <svg class="sidenav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
