@@ -10,4 +10,5 @@ public interface ISaleRepository
     Task<decimal> GetTotalRevenueAsync(DateOnly from, DateOnly to, CancellationToken ct = default);
     Task<decimal> GetTotalTipsAsync(DateOnly from, DateOnly to, CancellationToken ct = default);
     Task AddAsync(Sale sale, CancellationToken ct = default);
+    Task<Dictionary<string, decimal>> GetTopSellingItemsAsync(DateOnly from, DateOnly to, CancellationToken ct = default);
 }

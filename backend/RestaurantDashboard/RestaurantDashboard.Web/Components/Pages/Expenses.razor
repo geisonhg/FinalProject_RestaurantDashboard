@@ -1,18 +1,16 @@
 @page "/expenses"
 @attribute [Authorize(Policy = "ManagerPlus")]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using MediatR
-@using Microsoft.AspNetCore.Identity
 @using RestaurantDashboard.Application.Employees.Queries.GetAllEmployees
 @using RestaurantDashboard.Application.Employees.Dtos
 @using RestaurantDashboard.Application.Expenses.Commands.ApproveExpense
+@using RestaurantDashboard.Application.Expenses.Commands.DeleteExpense
 @using RestaurantDashboard.Application.Expenses.Commands.RecordExpense
 @using RestaurantDashboard.Application.Expenses.Dtos
 @using RestaurantDashboard.Application.Expenses.Queries.GetExpenses
 @using RestaurantDashboard.Domain.Enums
-@using RestaurantDashboard.Infrastructure.Identity
 @inject IMediator Mediator
-@inject UserManager<ApplicationUser> UserManager
-@inject AuthenticationStateProvider AuthProvider
 
 <PageTitle>Gastos</PageTitle>
 
@@ -77,11 +75,11 @@
                         <th>Descripción</th>
                         <th class="ex-right">Monto</th>
                         <th>Estado</th>
-                        <th>Acción</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var e in expenses.OrderByDescending(x => x.Date))
+                    @foreach (var e in expenses.OrderByDescending(x => x.Date).Skip((_exPage - 1) * ExPageSize).Take(ExPageSize))
                     {
                         <tr>
                             <td>@e.Date.ToString("dd/MM/yyyy")</td>
@@ -99,25 +97,63 @@
                                 }
                             </td>
                             <td>
-                                @if (!e.IsApproved)
-                                {
-                                    <button class="ex-btn ex-btn--approve" @onclick="() => ApproveExpense(e.Id)"
-                                        disabled="@approving">
-                                        @(approving && approvingId == e.Id ? "..." : "Aprobar")
-                                    </button>
-                                }
-                                else
-                                {
-                                    <span class="ex-approved-mark">✓</span>
-                                }
+                                <div class="ex-row-actions">
+                                    @if (!e.IsApproved)
+                                    {
+                                        <button class="ex-btn ex-btn--approve" @onclick="() => ApproveExpense(e.Id)"
+                                            disabled="@approving">
+                                            @(approving && approvingId == e.Id ? "..." : "Aprobar")
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="ex-approved-mark">✓</span>
+                                    }
+                                    <button class="ex-btn ex-btn--delete" @onclick="() => ConfirmDelete(e)">🗑️</button>
+                                </div>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
+        @if (ExTotalPages > 1)
+        {
+            <div class="ex-pagination">
+                <button class="ex-page-btn" disabled="@(_exPage == 1)" @onclick="() => _exPage--">‹</button>
+                @for (int p = 1; p <= ExTotalPages; p++)
+                {
+                    var pNum = p;
+                    <button class="ex-page-btn @(_exPage == pNum ? "ex-page-btn--active" : "")"
+                            @onclick="() => _exPage = pNum">@pNum</button>
+                }
+                <button class="ex-page-btn" disabled="@(_exPage == ExTotalPages)" @onclick="() => _exPage++">›</button>
+                <span class="ex-page-info">@((_exPage - 1) * ExPageSize + 1)–@(Math.Min(_exPage * ExPageSize, expenses.Count)) de @expenses.Count</span>
+            </div>
+        }
     }
 </div>
+
+@* ── Delete Confirm Modal ── *@
+@if (showDeleteConfirm && expenseToDelete is not null)
+{
+    <div class="ex-modal-backdrop" @onclick="CancelDelete">
+        <div class="ex-modal ex-modal--sm" @onclick:stopPropagation>
+            <h2 class="ex-modal__title">Eliminar gasto</h2>
+            <p class="ex-delete-msg">¿Estás seguro que querés eliminar el gasto de <strong>@expenseToDelete.Amount.ToString("C")</strong> en <strong>@expenseToDelete.Category</strong> del @expenseToDelete.Date.ToString("dd/MM/yyyy")? Esta acción no se puede deshacer.</p>
+            @if (deleteError is not null)
+            {
+                <div class="ex-form-error">@deleteError</div>
+            }
+            <div class="ex-form-actions">
+                <button class="ex-btn ex-btn--cancel" @onclick="CancelDelete">Cancelar</button>
+                <button class="ex-btn ex-btn--delete-confirm" @onclick="ExecuteDelete" disabled="@isDeleting">
+                    @(isDeleting ? "Eliminando..." : "Sí, eliminar")
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 @* ── Record Expense Modal ── *@
 @if (showForm)
@@ -223,13 +259,36 @@
     .ex-form { display: flex; flex-direction: column; gap: 0.75rem; }
     .ex-form-error { background: #2d1515; border: 1px solid #ef4444; color: #fca5a5; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; }
     .ex-form-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem; }
+    .ex-pagination { display: flex; align-items: center; gap: 0.35rem; padding: 1rem 0 0; flex-wrap: wrap; }
+    .ex-page-btn { background: #1e2433; border: 1px solid #2d3748; color: #94a3b8; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .ex-page-btn:hover:not(:disabled) { border-color: #3b82f6; color: #3b82f6; }
+    .ex-page-btn--active { background: #3b82f6; border-color: #3b82f6; color: white; }
+    .ex-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .ex-page-info { margin-left: 0.5rem; font-size: 0.78rem; color: #475569; }
+    .ex-row-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .ex-btn--delete { background: #1e2433; border: 1px solid #2d3748; color: #64748b; font-size: 0.8rem; padding: 0.35rem 0.6rem; }
+    .ex-btn--delete:hover { border-color: #ef4444; color: #ef4444; }
+    .ex-btn--delete-confirm { background: #ef4444; color: white; }
+    .ex-btn--delete-confirm:hover:not(:disabled) { background: #dc2626; }
+    .ex-modal--sm { max-width: 400px; }
+    .ex-delete-msg { color: #94a3b8; font-size: 0.9rem; margin: 0 0 1.25rem; line-height: 1.5; }
 </style>
 
 @code {
+    private const int ExPageSize = 10;
+    private int _exPage = 1;
+    private int ExTotalPages => expenses is null ? 1 : (int)Math.Ceiling(expenses.Count / (double)ExPageSize);
+
     private IReadOnlyList<ExpenseDto>? expenses;
     private bool isLoading = true;
     private bool approving = false;
     private Guid approvingId;
+
+    // Delete state
+    private bool showDeleteConfirm = false;
+    private bool isDeleting = false;
+    private ExpenseDto? expenseToDelete;
+    private string? deleteError;
 
     private DateOnly filterFrom = DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
     private DateOnly filterTo = DateOnly.FromDateTime(DateTime.Today);
@@ -248,22 +307,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await ResolveEmployeeIdAsync();
         await LoadExpenses();
     }
 
     private async Task ResolveEmployeeIdAsync()
     {
+        if (_currentEmployeeId is not null) return;
         try
         {
-            var auth = await AuthProvider.GetAuthenticationStateAsync();
-            var user = await UserManager.GetUserAsync(auth.User);
-            if (user?.EmployeeId is not null)
-            {
-                _currentEmployeeId = user.EmployeeId;
-                return;
-            }
-
             var all = await Mediator.Send(new GetAllEmployeesQuery());
             _currentEmployeeId = all.FirstOrDefault(e => e.IsActive)?.Id;
         }
@@ -273,6 +324,7 @@
     private async Task LoadExpenses()
     {
         isLoading = true;
+        _exPage = 1;
         try { expenses = await Mediator.Send(new GetExpensesQuery { From = filterFrom, To = filterTo }); }
         catch { expenses = []; }
         finally { isLoading = false; }
@@ -295,6 +347,8 @@
     {
         if (string.IsNullOrWhiteSpace(formDescription)) { formError = "La descripción es requerida."; return; }
         if (formAmount <= 0) { formError = "El monto debe ser mayor a 0."; return; }
+
+        await ResolveEmployeeIdAsync();
         if (_currentEmployeeId is null) { formError = "No se pudo resolver el empleado actual."; return; }
 
         isSaving = true;
@@ -315,6 +369,24 @@
         }
         catch (Exception ex) { formError = $"Error: {ex.Message}"; }
         finally { isSaving = false; }
+    }
+
+    private void ConfirmDelete(ExpenseDto expense) { expenseToDelete = expense; deleteError = null; showDeleteConfirm = true; }
+    private void CancelDelete() { showDeleteConfirm = false; expenseToDelete = null; deleteError = null; }
+
+    private async Task ExecuteDelete()
+    {
+        if (expenseToDelete is null) return;
+        isDeleting = true;
+        deleteError = null;
+        try
+        {
+            await Mediator.Send(new DeleteExpenseCommand(expenseToDelete.Id));
+            await LoadExpenses();
+            CancelDelete();
+        }
+        catch (Exception ex) { deleteError = $"Error: {ex.Message}"; }
+        finally { isDeleting = false; }
     }
 
     private async Task ApproveExpense(Guid expenseId)

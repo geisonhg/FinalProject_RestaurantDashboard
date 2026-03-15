@@ -18,8 +18,10 @@ public sealed class GetSalesSummaryQueryHandler
         CancellationToken cancellationToken)
     {
         // Sequential — EF Core DbContext is not thread-safe
-        var saleRecords = await _sales.GetByDateRangeAsync(request.From, request.To, cancellationToken);
-        var totalExpenses = await _expenses.GetTotalAsync(request.From, request.To, cancellationToken);
+        var saleRecords    = await _sales.GetByDateRangeAsync(request.From, request.To, cancellationToken);
+        var totalExpenses  = await _expenses.GetTotalAsync(request.From, request.To, cancellationToken);
+        var topItems       = await _sales.GetTopSellingItemsAsync(request.From, request.To, cancellationToken);
+        var expenseRecords = await _expenses.GetByDateRangeAsync(request.From, request.To, cancellationToken);
 
         var revenueByPayment = saleRecords
             .GroupBy(s => s.PaymentMethod)
@@ -27,6 +29,11 @@ public sealed class GetSalesSummaryQueryHandler
         var txByPayment = saleRecords
             .GroupBy(s => s.PaymentMethod)
             .ToDictionary(g => g.Key.ToString(), g => g.Count());
+        var expensesByCategory = expenseRecords
+            .Where(e => e.IsApproved)
+            .GroupBy(e => e.Category)
+            .ToDictionary(g => g.Key.ToString(), g => g.Sum(e => e.Amount.Amount));
+
         return new SalesSummaryDto
         {
             PeriodStart = request.From,
@@ -36,7 +43,9 @@ public sealed class GetSalesSummaryQueryHandler
             TotalTransactions = saleRecords.Count,
             TotalExpenses = totalExpenses,
             RevenueByPaymentMethod = revenueByPayment,
-            TransactionsByPaymentMethod = txByPayment
+            TransactionsByPaymentMethod = txByPayment,
+            TopSellingItems = topItems,
+            ExpensesByCategory = expensesByCategory
         };
     }
 }

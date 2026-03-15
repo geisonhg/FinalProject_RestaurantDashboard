@@ -38,4 +38,7 @@ public sealed class ExpenseRepository : IExpenseRepository
 
     public void Update(Expense expense) =>
         _context.Expenses.Update(expense);
+
+    public void Remove(Expense expense) =>
+        _context.Expenses.Remove(expense);
 }

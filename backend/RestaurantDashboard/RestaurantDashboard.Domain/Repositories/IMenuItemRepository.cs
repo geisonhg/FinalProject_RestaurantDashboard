@@ -9,4 +9,5 @@ public interface IMenuItemRepository
     Task<IReadOnlyList<MenuItem>> GetByCategoryAsync(string category, CancellationToken ct = default);
     Task AddAsync(MenuItem menuItem, CancellationToken ct = default);
     void Update(MenuItem menuItem);
+    void Remove(MenuItem menuItem);
 }

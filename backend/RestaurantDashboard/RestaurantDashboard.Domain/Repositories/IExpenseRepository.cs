@@ -11,4 +11,5 @@ public interface IExpenseRepository
     Task<decimal> GetTotalAsync(DateOnly from, DateOnly to, CancellationToken ct = default);
     Task AddAsync(Expense expense, CancellationToken ct = default);
     void Update(Expense expense);
+    void Remove(Expense expense);
 }
