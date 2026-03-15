@@ -22,7 +22,7 @@ public sealed class UpdateMenuItemCommandHandler : IRequestHandler<UpdateMenuIte
         var menuItem = await _menuItems.GetByIdAsync(request.MenuItemId, cancellationToken)
             ?? throw new NotFoundException(nameof(MenuItem), request.MenuItemId);
 
-        menuItem.Update(request.Name, request.Category);
+        menuItem.Update(request.Name, request.Category, request.Description);
         menuItem.UpdatePrice(request.BasePrice);
         menuItem.SetAvailability(request.IsAvailable);
 
@@ -34,6 +34,7 @@ public sealed class UpdateMenuItemCommandHandler : IRequestHandler<UpdateMenuIte
             Id = menuItem.Id,
             Name = menuItem.Name,
             Category = menuItem.Category,
+            Description = menuItem.Description,
             BasePrice = menuItem.BasePrice.Amount,
             IsAvailable = menuItem.IsAvailable
         };

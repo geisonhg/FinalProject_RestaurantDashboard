@@ -39,37 +39,37 @@
             <div class="kpi kpi--green">
                 <div class="kpi__label">Revenue</div>
                 <div class="kpi__value">€@summary.TotalRevenue.ToString("N2")</div>
-                <div class="kpi__sub">Period total</div>
+                <div class="kpi__sub">@TrendBadge(summary.TotalRevenue, prevSummary?.TotalRevenue)</div>
                 <div class="kpi__bar"></div>
             </div>
             <div class="kpi kpi--blue">
                 <div class="kpi__label">Net Profit</div>
                 <div class="kpi__value">€@summary.NetProfit.ToString("N2")</div>
-                <div class="kpi__sub">Revenue − Expenses</div>
+                <div class="kpi__sub">@TrendBadge(summary.NetProfit, prevSummary?.NetProfit)</div>
                 <div class="kpi__bar"></div>
             </div>
             <div class="kpi kpi--red">
                 <div class="kpi__label">Expenses</div>
                 <div class="kpi__value">€@summary.TotalExpenses.ToString("N2")</div>
-                <div class="kpi__sub">Period total</div>
+                <div class="kpi__sub">@TrendBadge(summary.TotalExpenses, prevSummary?.TotalExpenses, invertColor: true)</div>
                 <div class="kpi__bar"></div>
             </div>
             <div class="kpi kpi--amber">
                 <div class="kpi__label">Tips</div>
                 <div class="kpi__value">€@summary.TotalTips.ToString("N2")</div>
-                <div class="kpi__sub">Accumulated</div>
+                <div class="kpi__sub">@TrendBadge(summary.TotalTips, prevSummary?.TotalTips)</div>
                 <div class="kpi__bar"></div>
             </div>
             <div class="kpi kpi--purple">
                 <div class="kpi__label">Transactions</div>
                 <div class="kpi__value">@summary.TotalTransactions</div>
-                <div class="kpi__sub">Closed orders</div>
+                <div class="kpi__sub">@TrendBadge(summary.TotalTransactions, prevSummary?.TotalTransactions)</div>
                 <div class="kpi__bar"></div>
             </div>
             <div class="kpi kpi--cyan">
                 <div class="kpi__label">Avg. Ticket</div>
                 <div class="kpi__value">€@summary.AverageOrderValue.ToString("N2")</div>
-                <div class="kpi__sub">Per order</div>
+                <div class="kpi__sub">@TrendBadge(summary.AverageOrderValue, prevSummary?.AverageOrderValue)</div>
                 <div class="kpi__bar"></div>
             </div>
         </div>
@@ -218,7 +218,10 @@
     .kpi:hover { transform: translateY(-2px); }
     .kpi__label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: #475569; font-weight: 700; margin-bottom: 0.45rem; }
     .kpi__value { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
-    .kpi__sub { font-size: 0.72rem; color: #334155; margin-top: 0.35rem; margin-bottom: 0.9rem; }
+    .kpi__sub { font-size: 0.72rem; color: #334155; margin-top: 0.35rem; margin-bottom: 0.9rem; min-height: 1em; }
+    .trend-up { color: #34d399; font-weight: 700; }
+    .trend-down { color: #f87171; font-weight: 700; }
+    .trend-neutral { color: #475569; }
     .kpi__bar { height: 3px; margin: 0 -1.1rem; }
     .kpi--green .kpi__value { color: #34d399; } .kpi--green .kpi__bar { background: #10b981; }
     .kpi--blue  .kpi__value { color: #60a5fa; } .kpi--blue  .kpi__bar { background: #3b82f6; }
@@ -269,6 +272,7 @@
 
 @code {
     private SalesSummaryDto? summary;
+    private SalesSummaryDto? prevSummary;
     private bool isLoading = true;
     private string? errorMessage;
     private int preset = 30;
@@ -296,7 +300,20 @@
         isLoading = true;
         errorMessage = null;
         StateHasChanged();
-        try { summary = await Mediator.Send(new GetSalesSummaryQuery { From = fromDate, To = toDate }); }
+        try
+        {
+            var periodDays = toDate.DayNumber - fromDate.DayNumber + 1;
+            var prevFrom = fromDate.AddDays(-periodDays);
+            var prevTo = fromDate.AddDays(-1);
+            var tasks = new[]
+            {
+                Mediator.Send(new GetSalesSummaryQuery { From = fromDate, To = toDate }),
+                Mediator.Send(new GetSalesSummaryQuery { From = prevFrom, To = prevTo })
+            };
+            await Task.WhenAll(tasks);
+            summary = tasks[0].Result;
+            prevSummary = tasks[1].Result;
+        }
         catch (Exception ex) { errorMessage = ex.Message; }
         finally { isLoading = false; StateHasChanged(); }
     }
@@ -311,5 +328,17 @@
             await JS.InvokeVoidAsync("renderPaymentChart", "paymentChart", labels, values);
         }
         catch { }
+    }
+
+    private MarkupString TrendBadge(decimal current, decimal? previous, bool invertColor = false)
+    {
+        if (previous is null || previous == 0)
+            return new MarkupString("<span class=\"trend-neutral\">vs prev. period</span>");
+
+        var pct = (current - previous.Value) / Math.Abs(previous.Value) * 100m;
+        var isUp = pct >= 0;
+        var arrow = isUp ? "▲" : "▼";
+        var cssClass = (isUp ^ invertColor) ? "trend-up" : "trend-down";
+        return new MarkupString($"<span class=\"{cssClass}\">{arrow} {Math.Abs(pct):N1}% vs prev.</span>");
     }
 }

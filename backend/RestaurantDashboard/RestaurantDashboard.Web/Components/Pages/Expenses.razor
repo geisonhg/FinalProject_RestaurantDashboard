@@ -55,6 +55,18 @@
         </div>
     }
 
+    @* ── Bulk action bar ── *@
+    @if (selectedIds.Count > 0)
+    {
+        <div class="ex-bulk-bar">
+            <span class="ex-bulk-count">@selectedIds.Count selected</span>
+            <button class="ex-btn ex-btn--approve ex-btn--bulk" @onclick="BulkApprove" disabled="@bulkApproving">
+                @(bulkApproving ? "Approving..." : $"Approve {selectedIds.Count}")
+            </button>
+            <button class="ex-btn ex-btn--cancel ex-btn--bulk-clear" @onclick="ClearSelection">Clear</button>
+        </div>
+    }
+
     @* ── Table ── *@
     @if (isLoading)
     {
@@ -66,10 +78,18 @@
     }
     else
     {
+        var pageItems = expenses.OrderByDescending(x => x.Date).Skip((_exPage - 1) * ExPageSize).Take(ExPageSize).ToList();
+        var pendingOnPage = pageItems.Where(x => !x.IsApproved).Select(x => x.Id).ToHashSet();
+        var allPageSelected = pendingOnPage.Count > 0 && pendingOnPage.All(id => selectedIds.Contains(id));
+
         <div class="ex-table-wrap">
             <table class="ex-table">
                 <thead>
                     <tr>
+                        <th class="ex-cb-col">
+                            <input type="checkbox" checked="@allPageSelected"
+                                @onchange="e => ToggleAllOnPage(pendingOnPage, (bool)e.Value!)" />
+                        </th>
                         <th>Date</th>
                         <th>Category</th>
                         <th>Description</th>
@@ -79,9 +99,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var e in expenses.OrderByDescending(x => x.Date).Skip((_exPage - 1) * ExPageSize).Take(ExPageSize))
+                    @foreach (var e in pageItems)
                     {
-                        <tr>
+                        <tr class="@(selectedIds.Contains(e.Id) ? "ex-row--selected" : "")">
+                            <td class="ex-cb-col">
+                                @if (!e.IsApproved)
+                                {
+                                    <input type="checkbox" checked="@selectedIds.Contains(e.Id)"
+                                        @onchange="ev => ToggleSelect(e.Id, (bool)ev.Value!)" />
+                                }
+                            </td>
                             <td>@e.Date.ToString("dd/MM/yyyy")</td>
                             <td><span class="ex-category">@e.Category</span></td>
                             <td class="ex-desc">@e.Description</td>
@@ -266,6 +293,12 @@
     .ex-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .ex-page-info { margin-left: 0.5rem; font-size: 0.78rem; color: #475569; }
     .ex-row-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .ex-cb-col { width: 36px; padding-left: 0.75rem; }
+    .ex-row--selected td { background: #162033 !important; }
+    .ex-bulk-bar { display: flex; align-items: center; gap: 1rem; background: #0d1a2e; border: 1px solid #1e3a5f; border-radius: 10px; padding: 0.65rem 1.25rem; margin-bottom: 1rem; }
+    .ex-bulk-count { font-size: 0.85rem; color: #60a5fa; font-weight: 600; }
+    .ex-btn--bulk { font-size: 0.82rem; padding: 0.4rem 1rem; }
+    .ex-btn--bulk-clear { font-size: 0.82rem; padding: 0.4rem 0.8rem; }
     .ex-btn--delete { background: #1e2433; border: 1px solid #2d3748; color: #64748b; font-size: 0.8rem; padding: 0.35rem 0.6rem; }
     .ex-btn--delete:hover { border-color: #ef4444; color: #ef4444; }
     .ex-btn--delete-confirm { background: #ef4444; color: white; }
@@ -283,6 +316,8 @@
     private bool isLoading = true;
     private bool approving = false;
     private Guid approvingId;
+    private HashSet<Guid> selectedIds = [];
+    private bool bulkApproving = false;
 
     // Delete state
     private bool showDeleteConfirm = false;
@@ -325,9 +360,39 @@
     {
         isLoading = true;
         _exPage = 1;
+        selectedIds.Clear();
         try { expenses = await Mediator.Send(new GetExpensesQuery { From = filterFrom, To = filterTo }); }
         catch { expenses = []; }
         finally { isLoading = false; }
+    }
+
+    private void ToggleSelect(Guid id, bool selected)
+    {
+        if (selected) selectedIds.Add(id);
+        else selectedIds.Remove(id);
+    }
+
+    private void ToggleAllOnPage(HashSet<Guid> pendingIds, bool selected)
+    {
+        if (selected) foreach (var id in pendingIds) selectedIds.Add(id);
+        else foreach (var id in pendingIds) selectedIds.Remove(id);
+    }
+
+    private void ClearSelection() => selectedIds.Clear();
+
+    private async Task BulkApprove()
+    {
+        if (selectedIds.Count == 0) return;
+        bulkApproving = true;
+        var ids = selectedIds.ToList();
+        try
+        {
+            foreach (var id in ids)
+                await Mediator.Send(new ApproveExpenseCommand { ExpenseId = id });
+            await LoadExpenses();
+        }
+        catch { }
+        finally { bulkApproving = false; }
     }
 
     private void OpenRecordForm()

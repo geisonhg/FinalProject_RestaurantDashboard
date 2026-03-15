@@ -7,12 +7,13 @@ public sealed class MenuItem : AggregateRoot
 {
     public string Name { get; private set; } = default!;
     public string Category { get; private set; } = default!;
+    public string? Description { get; private set; }
     public Money BasePrice { get; private set; } = default!;
     public bool IsAvailable { get; private set; }
 
     private MenuItem() { }
 
-    public static MenuItem Create(string name, string category, decimal basePrice)
+    public static MenuItem Create(string name, string category, decimal basePrice, string? description = null)
     {
         Guard.AgainstNullOrEmpty(name, nameof(name));
         Guard.AgainstNullOrEmpty(category, nameof(category));
@@ -22,6 +23,7 @@ public sealed class MenuItem : AggregateRoot
             Id = Guid.NewGuid(),
             Name = name,
             Category = category,
+            Description = description,
             BasePrice = Money.From(basePrice),
             IsAvailable = true
         };
@@ -33,11 +35,12 @@ public sealed class MenuItem : AggregateRoot
     public void SetAvailability(bool available) =>
         IsAvailable = available;
 
-    public void Update(string name, string category)
+    public void Update(string name, string category, string? description = null)
     {
         Guard.AgainstNullOrEmpty(name, nameof(name));
         Guard.AgainstNullOrEmpty(category, nameof(category));
         Name = name;
         Category = category;
+        Description = description;
     }
 }

@@ -18,7 +18,7 @@ public sealed class CreateMenuItemCommandHandler : IRequestHandler<CreateMenuIte
 
     public async Task<MenuItemDto> Handle(CreateMenuItemCommand request, CancellationToken cancellationToken)
     {
-        var menuItem = MenuItem.Create(request.Name, request.Category, request.BasePrice);
+        var menuItem = MenuItem.Create(request.Name, request.Category, request.BasePrice, request.Description);
 
         await _menuItems.AddAsync(menuItem, cancellationToken);
         await _uow.CommitAsync(cancellationToken);
@@ -28,6 +28,7 @@ public sealed class CreateMenuItemCommandHandler : IRequestHandler<CreateMenuIte
             Id = menuItem.Id,
             Name = menuItem.Name,
             Category = menuItem.Category,
+            Description = menuItem.Description,
             BasePrice = menuItem.BasePrice.Amount,
             IsAvailable = menuItem.IsAvailable
         };

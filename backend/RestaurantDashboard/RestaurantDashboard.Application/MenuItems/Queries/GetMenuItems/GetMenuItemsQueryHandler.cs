@@ -23,6 +23,7 @@ public sealed class GetMenuItemsQueryHandler
             Id = m.Id,
             Name = m.Name,
             Category = m.Category,
+            Description = m.Description,
             BasePrice = m.BasePrice.Amount,
             IsAvailable = m.IsAvailable
         }).ToList();
